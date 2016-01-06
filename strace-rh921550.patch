@@ -1,0 +1,19 @@
+diff -Nrup a/mem.c b/mem.c
+--- a/mem.c	2013-05-23 07:40:34.000000000 -0600
++++ b/mem.c	2014-05-21 10:14:34.958889425 -0600
+@@ -385,9 +385,15 @@ static const struct xlat madvise_cmds[]
+ #ifdef MADV_NOHUGEPAGE
+ 	{ MADV_NOHUGEPAGE,	"MADV_NOHUGEPAGE" },
+ #endif
++#ifndef MADV_DONTDUMP
++#define MADV_DONTDUMP 16
++#endif
+ #ifdef MADV_DONTDUMP
+ 	{ MADV_DONTDUMP,	"MADV_DONTDUMP" },
+ #endif
++#ifndef MADV_DODUMP
++#define MADV_DODUMP 17
++#endif
+ #ifdef MADV_DODUMP
+ 	{ MADV_DODUMP,		"MADV_DODUMP" },
+ #endif

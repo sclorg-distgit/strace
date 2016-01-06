@@ -1,0 +1,46 @@
+diff -Nrup a/Makefile.am b/Makefile.am
+--- a/Makefile.am	2012-04-18 09:27:25.000000000 -0600
++++ b/Makefile.am	2013-04-15 15:05:43.907237228 -0600
+@@ -3,7 +3,7 @@
+ SUBDIRS = tests
+ 
+ bin_PROGRAMS = strace
+-man_MANS = strace.1
++man_MANS = strace.1 strace-log-merge.1
+ bin_SCRIPTS = strace-graph strace-log-merge
+ 
+ OS		= linux
+diff -Nrup a/Makefile.in b/Makefile.in
+--- a/Makefile.in	2012-05-02 09:40:25.000000000 -0600
++++ b/Makefile.in	2013-04-15 15:15:01.060139931 -0600
+@@ -302,7 +302,7 @@ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ SUBDIRS = tests
+-man_MANS = strace.1
++man_MANS = strace.1 strace-log-merge.1
+ bin_SCRIPTS = strace-graph strace-log-merge
+ OS = linux
+ # ARCH is `i386', `m68k', `sparc', etc.
+diff -Nrup a/strace-log-merge.1 b/strace-log-merge.1
+--- a/strace-log-merge.1	1969-12-31 17:00:00.000000000 -0700
++++ b/strace-log-merge.1	2013-04-15 15:05:13.235353408 -0600
+@@ -0,0 +1,18 @@
++.TH strace-log-merge 1 "15 April 2013" ".1" "strace-log-merge"
++.SH NAME
++strace-log-merge
++.SH SYNOPSIS
++strace-log-merge STRACE_LOG
++.SH DESCRIPTION
++strace-log-merge finds all STRACE_LOG.PID files, adds PID prefix to every line,
++the combines and sorts them, and prints the result to standard output.
++
++It is assumed that STRACE_LOGs were produced by strace with the -tt[t]
++option which prints timestamps (otherwise worting won't do any good).
++
++.SH OPTIONS
++--help  Show help
++
++.SH SEE ALSO
++.SH BUGS
++
