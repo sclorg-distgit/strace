@@ -1,0 +1,81 @@
+net tests are too timing-dependent to be reliable
+
+diff -rup a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2015-03-04 19:05:27.000000000 -0500
++++ b/tests/Makefile.am	2015-07-10 22:13:21.784148810 -0400
+@@ -64,9 +64,6 @@ TESTS = \
+ 	stat64-v.test \
+ 	statfs.test \
+ 	mmsg.test \
+-	net.test \
+-	net-fd.test \
+-	net-yy.test \
+ 	pc.test \
+ 	sun_path.test \
+ 	unix-yy.test \
+Only in b/tests: Makefile.am~
+diff -rup a/tests/Makefile.in b/tests/Makefile.in
+--- a/tests/Makefile.in	2015-03-06 10:16:47.000000000 -0500
++++ b/tests/Makefile.in	2015-07-10 22:13:25.717030540 -0400
+@@ -613,9 +613,6 @@ TESTS = \
+ 	stat64-v.test \
+ 	statfs.test \
+ 	mmsg.test \
+-	net.test \
+-	net-fd.test \
+-	net-yy.test \
+ 	pc.test \
+ 	sun_path.test \
+ 	unix-yy.test \
+diff -rup a/tests-m32/Makefile.am b/tests-m32/Makefile.am
+--- a/tests-m32/Makefile.am	2015-03-06 10:16:32.000000000 -0500
++++ b/tests-m32/Makefile.am	2015-07-10 22:13:38.072658951 -0400
+@@ -64,9 +64,6 @@ TESTS = \
+ 	stat64-v.test \
+ 	statfs.test \
+ 	mmsg.test \
+-	net.test \
+-	net-fd.test \
+-	net-yy.test \
+ 	pc.test \
+ 	sun_path.test \
+ 	unix-yy.test \
+diff -rup a/tests-m32/Makefile.in b/tests-m32/Makefile.in
+--- a/tests-m32/Makefile.in	2015-03-06 10:16:46.000000000 -0500
++++ b/tests-m32/Makefile.in	2015-07-10 22:18:17.810246281 -0400
+@@ -613,9 +613,6 @@ TESTS = \
+ 	stat64-v.test \
+ 	statfs.test \
+ 	mmsg.test \
+-	net.test \
+-	net-fd.test \
+-	net-yy.test \
+ 	pc.test \
+ 	sun_path.test \
+ 	unix-yy.test \
+diff -rup a/tests-mx32/Makefile.am b/tests-mx32/Makefile.am
+--- a/tests-mx32/Makefile.am	2015-03-06 10:16:32.000000000 -0500
++++ b/tests-mx32/Makefile.am	2015-07-10 22:18:16.187295098 -0400
+@@ -64,9 +64,6 @@ TESTS = \
+ 	stat64-v.test \
+ 	statfs.test \
+ 	mmsg.test \
+-	net.test \
+-	net-fd.test \
+-	net-yy.test \
+ 	pc.test \
+ 	sun_path.test \
+ 	unix-yy.test \
+diff -rup a/tests-mx32/Makefile.in b/tests-mx32/Makefile.in
+--- a/tests-mx32/Makefile.in	2015-03-06 10:16:47.000000000 -0500
++++ b/tests-mx32/Makefile.in	2015-07-10 22:18:13.703369842 -0400
+@@ -613,9 +613,6 @@ TESTS = \
+ 	stat64-v.test \
+ 	statfs.test \
+ 	mmsg.test \
+-	net.test \
+-	net-fd.test \
+-	net-yy.test \
+ 	pc.test \
+ 	sun_path.test \
+ 	unix-yy.test \

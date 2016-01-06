@@ -1,0 +1,32 @@
+From 1b5b5670eb17787fa1c2e7d34a722b7330e2d78b Mon Sep 17 00:00:00 2001
+From: Elliott Hughes <enh@google.com>
+Date: Tue, 17 Mar 2015 16:00:31 -0700
+Subject: [PATCH 17/68] Show f_flags field in printstatfs
+
+printstatfs64 was right, but printstatfs was missing f_flags.
+Noticed on aarch64.
+
+* statfs.c (printstatfs) [_STATFS_F_FLAGS]: Print statfs.f_flags.
+
+Signed-off-by: Elliott Hughes <enh@google.com>
+---
+ statfs.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/statfs.c b/statfs.c
+index 6f5e4d3..f1e9fc3 100644
+--- a/statfs.c
++++ b/statfs.c
+@@ -46,6 +46,9 @@ printstatfs(struct tcb *tcp, const long addr)
+ #ifdef _STATFS_F_FRSIZE
+ 	tprintf(", f_frsize=%lu", (unsigned long)statbuf.f_frsize);
+ #endif
++#ifdef _STATFS_F_FLAGS
++	tprintf(", f_flags=%lu", (unsigned long)statbuf.f_flags);
++#endif
+ 	tprints("}");
+ }
+ 
+-- 
+2.3.5
+
