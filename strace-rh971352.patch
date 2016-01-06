@@ -1,0 +1,15 @@
+diff -Nrup a/strace.c b/strace.c
+--- a/strace.c	2013-07-17 14:39:50.603696069 -0600
++++ b/strace.c	2013-07-17 14:43:27.625962443 -0600
+@@ -2184,6 +2184,11 @@ handle_stopped_tcbs(struct tcb *tcp)
+ 		status = tcp->wait_status;
+ 		pid = tcp->pid;
+ 
++		/* we must re-fetch all registers for each pid in list */
++		clear_regs();
++		if (WIFSTOPPED(status))
++			get_regs(pid);
++
+                 event = ((unsigned)status >> 16);
+ 		if (WIFSIGNALED(status)) {
+ 			if (pid == strace_child)

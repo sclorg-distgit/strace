@@ -1,0 +1,40 @@
+diff -Nrup a/system.c b/system.c
+--- a/system.c	2012-03-16 05:02:22.000000000 -0600
++++ b/system.c	2013-02-18 15:17:23.651569983 -0700
+@@ -516,10 +516,14 @@ print_cap_header(struct tcb *tcp, unsign
+ 		 umoven(tcp, addr, sizeof(*arg.p), arg.c) < 0)
+ 		tprintf("%#lx", addr);
+ 	else {
++		__u32 version;
++		int pid;
+ 		tprints("{");
+-		printxval(cap_version, arg.p->version,
++		memcpy (&version, &arg.p->version, sizeof (__u32));
++		printxval(cap_version, version,
+ 			  "_LINUX_CAPABILITY_VERSION_???");
+-		tprintf(", %d}", arg.p->pid);
++		memcpy (&pid, &arg.p->pid, sizeof (int));
++		tprintf(", %d}", pid);
+ 	}
+ }
+ 
+@@ -537,12 +541,16 @@ print_cap_data(struct tcb *tcp, unsigned
+ 		 umoven(tcp, addr, sizeof(*arg.p), arg.c) < 0)
+ 		tprintf("%#lx", addr);
+ 	else {
++		__u32 x;
+ 		tprints("{");
+-		printflags(capabilities, arg.p->effective, "CAP_???");
++		memcpy (&x, &arg.p->effective, sizeof (__u32));
++		printflags(capabilities, x, "CAP_???");
+ 		tprints(", ");
+-		printflags(capabilities, arg.p->permitted, "CAP_???");
++		memcpy (&x, &arg.p->permitted, sizeof (__u32));
++		printflags(capabilities, x, "CAP_???");
+ 		tprints(", ");
+-		printflags(capabilities, arg.p->inheritable, "CAP_???");
++		memcpy (&x, &arg.p->inheritable, sizeof (__u32));
++		printflags(capabilities, x, "CAP_???");
+ 		tprints("}");
+ 	}
+ }
