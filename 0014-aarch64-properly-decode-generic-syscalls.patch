@@ -1,0 +1,27 @@
+From 71d6ffc6ed0a539257f0ec1a28d34c8d88bebce8 Mon Sep 17 00:00:00 2001
+From: Andreas Schwab <schwab@suse.de>
+Date: Thu, 12 Mar 2015 16:17:45 +0100
+Subject: [PATCH 14/68] aarch64: properly decode generic syscalls
+
+* linux/aarch64/syscallent1.h: Don't override entries 277 to 1023.
+---
+ linux/aarch64/syscallent1.h | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/linux/aarch64/syscallent1.h b/linux/aarch64/syscallent1.h
+index 4ec9665..a72bb7b 100644
+--- a/linux/aarch64/syscallent1.h
++++ b/linux/aarch64/syscallent1.h
+@@ -3,9 +3,6 @@
+ /* Arch-specific block, not used on AArch64 */
+ [244 ... 259] = { },
+ 
+-/* Blank down to 1023 */
+-[277 ... 1023] = { },
+-
+ /* Quote from asm-generic/unistd.h:
+  *
+  * All syscalls below here should go away really,
+-- 
+2.3.5
+

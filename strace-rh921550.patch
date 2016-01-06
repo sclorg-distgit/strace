@@ -1,0 +1,17 @@
+diff -Nrup a/mem.c b/mem.c
+--- a/mem.c	2015-01-14 02:17:11.000000000 -0500
++++ b/mem.c	2015-07-03 00:26:47.902630733 -0400
+@@ -221,6 +221,13 @@ sys_mremap(struct tcb *tcp)
+ 	return RVAL_HEX;
+ }
+ 
++#ifndef MADV_DONTDUMP
++#define MADV_DONTDUMP 16
++#endif
++#ifndef MADV_DODUMP
++#define MADV_DODUMP 17
++#endif
++
+ #include "xlat/madvise_cmds.h"
+ 
+ int

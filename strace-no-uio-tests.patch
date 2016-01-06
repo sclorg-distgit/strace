@@ -1,0 +1,68 @@
+RHEL 6's kernel is too old for these
+
+diff -rup a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2015-03-04 19:05:27.000000000 -0500
++++ b/tests/Makefile.am	2015-07-15 22:19:28.147738135 -0400
+@@ -73,7 +73,6 @@ TESTS = \
+ 	uid.test \
+ 	uid16.test \
+ 	uid32.test \
+-	uio.test \
+ 	count.test \
+ 	detach-sleeping.test \
+ 	detach-stopped.test \
+diff -rup a/tests/Makefile.in b/tests/Makefile.in
+--- a/tests/Makefile.in	2015-03-06 10:16:47.000000000 -0500
++++ b/tests/Makefile.in	2015-07-15 22:19:22.800896239 -0400
+@@ -622,7 +622,6 @@ TESTS = \
+ 	uid.test \
+ 	uid16.test \
+ 	uid32.test \
+-	uio.test \
+ 	count.test \
+ 	detach-sleeping.test \
+ 	detach-stopped.test \
+diff -rup a/tests-m32/Makefile.am b/tests-m32/Makefile.am
+--- a/tests-m32/Makefile.am	2015-03-06 10:16:32.000000000 -0500
++++ b/tests-m32/Makefile.am	2015-07-15 22:19:40.421375846 -0400
+@@ -73,7 +73,6 @@ TESTS = \
+ 	uid.test \
+ 	uid16.test \
+ 	uid32.test \
+-	uio.test \
+ 	count.test \
+ 	detach-sleeping.test \
+ 	detach-stopped.test \
+diff -rup a/tests-m32/Makefile.in b/tests-m32/Makefile.in
+--- a/tests-m32/Makefile.in	2015-03-06 10:16:46.000000000 -0500
++++ b/tests-m32/Makefile.in	2015-07-15 22:19:37.656457426 -0400
+@@ -622,7 +622,6 @@ TESTS = \
+ 	uid.test \
+ 	uid16.test \
+ 	uid32.test \
+-	uio.test \
+ 	count.test \
+ 	detach-sleeping.test \
+ 	detach-stopped.test \
+diff -rup a/tests-mx32/Makefile.am b/tests-mx32/Makefile.am
+--- a/tests-mx32/Makefile.am	2015-03-06 10:16:32.000000000 -0500
++++ b/tests-mx32/Makefile.am	2015-07-15 22:19:34.226558657 -0400
+@@ -73,7 +73,6 @@ TESTS = \
+ 	uid.test \
+ 	uid16.test \
+ 	uid32.test \
+-	uio.test \
+ 	count.test \
+ 	detach-sleeping.test \
+ 	detach-stopped.test \
+diff -rup a/tests-mx32/Makefile.in b/tests-mx32/Makefile.in
+--- a/tests-mx32/Makefile.in	2015-03-06 10:16:47.000000000 -0500
++++ b/tests-mx32/Makefile.in	2015-07-15 22:19:31.576636959 -0400
+@@ -622,7 +622,6 @@ TESTS = \
+ 	uid.test \
+ 	uid16.test \
+ 	uid32.test \
+-	uio.test \
+ 	count.test \
+ 	detach-sleeping.test \
+ 	detach-stopped.test \
