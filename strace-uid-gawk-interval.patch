@@ -1,0 +1,72 @@
+diff -rup a/tests/caps.test b/tests/caps.test
+--- a/tests/caps.test	2014-12-05 22:53:12.000000000 -0500
++++ b/tests/caps.test	2015-08-05 14:49:53.682969787 -0400
+@@ -20,7 +20,7 @@ $STRACE -o "$LOG" $args || {
+ 	fail_ "$STRACE $args failed"
+ }
+ 
+-awk -f "$srcdir"/caps.awk "$LOG" ||
++gawk --re-interval -f "$srcdir"/caps.awk "$LOG" ||
+ 	{ cat "$LOG"; fail_ 'unexpected output'; }
+ 
+ exit 0
+diff -rup a/tests/uid.test b/tests/uid.test
+--- a/tests/uid.test	2015-01-14 05:15:49.000000000 -0500
++++ b/tests/uid.test	2015-08-05 14:50:37.282664886 -0400
+@@ -24,7 +24,7 @@ $STRACE -o "$LOG" $args ./"$uid"|| {
+ 	fail_ "$STRACE $args ./$uid failed"
+ }
+ 
+-gawk -f "$srcdir"/uid.awk -v suffix="$s" "$LOG" || {
++gawk --re-interval -f "$srcdir"/uid.awk -v suffix="$s" "$LOG" || {
+ 	cat "$LOG"
+ 	fail_ 'unexpected output'
+ }
+diff -rup a/tests-m32/caps.test b/tests-m32/caps.test
+--- a/tests-m32/caps.test	2014-12-05 22:53:12.000000000 -0500
++++ b/tests-m32/caps.test	2015-08-05 14:49:58.730818718 -0400
+@@ -20,7 +20,7 @@ $STRACE -o "$LOG" $args || {
+ 	fail_ "$STRACE $args failed"
+ }
+ 
+-awk -f "$srcdir"/caps.awk "$LOG" ||
++gawk --re-interval -f "$srcdir"/caps.awk "$LOG" ||
+ 	{ cat "$LOG"; fail_ 'unexpected output'; }
+ 
+ exit 0
+diff -rup a/tests-m32/uid.test b/tests-m32/uid.test
+--- a/tests-m32/uid.test	2015-01-14 05:15:49.000000000 -0500
++++ b/tests-m32/uid.test	2015-08-05 14:50:55.835109617 -0400
+@@ -24,7 +24,7 @@ $STRACE -o "$LOG" $args ./"$uid"|| {
+ 	fail_ "$STRACE $args ./$uid failed"
+ }
+ 
+-gawk -f "$srcdir"/uid.awk -v suffix="$s" "$LOG" || {
++gawk --re-interval -f "$srcdir"/uid.awk -v suffix="$s" "$LOG" || {
+ 	cat "$LOG"
+ 	fail_ 'unexpected output'
+ }
+diff -rup a/tests-mx32/caps.test b/tests-mx32/caps.test
+--- a/tests-mx32/caps.test	2014-12-05 22:53:12.000000000 -0500
++++ b/tests-mx32/caps.test	2015-08-05 14:49:56.556883735 -0400
+@@ -20,7 +20,7 @@ $STRACE -o "$LOG" $args || {
+ 	fail_ "$STRACE $args failed"
+ }
+ 
+-awk -f "$srcdir"/caps.awk "$LOG" ||
++gawk --re-interval -f "$srcdir"/caps.awk "$LOG" ||
+ 	{ cat "$LOG"; fail_ 'unexpected output'; }
+ 
+ exit 0
+diff -rup a/tests-mx32/uid.test b/tests-mx32/uid.test
+--- a/tests-mx32/uid.test	2015-01-14 05:15:49.000000000 -0500
++++ b/tests-mx32/uid.test	2015-08-05 14:50:46.617385476 -0400
+@@ -24,7 +24,7 @@ $STRACE -o "$LOG" $args ./"$uid"|| {
+ 	fail_ "$STRACE $args ./$uid failed"
+ }
+ 
+-gawk -f "$srcdir"/uid.awk -v suffix="$s" "$LOG" || {
++gawk --re-interval -f "$srcdir"/uid.awk -v suffix="$s" "$LOG" || {
+ 	cat "$LOG"
+ 	fail_ 'unexpected output'
+ }
