@@ -1,8 +1,8 @@
-diff -Nrup a/mem.c b/mem.c
---- a/mem.c	2015-01-14 02:17:11.000000000 -0500
-+++ b/mem.c	2015-07-03 00:26:47.902630733 -0400
-@@ -221,6 +221,13 @@ sys_mremap(struct tcb *tcp)
- 	return RVAL_HEX;
+diff -rup a/mem.c b/mem.c
+--- a/mem.c	2016-05-16 19:47:34.000000000 -0400
++++ b/mem.c	2016-07-22 17:15:03.874544654 -0400
+@@ -207,6 +207,13 @@ SYS_FUNC(mremap)
+ 	return RVAL_DECODED | RVAL_HEX;
  }
  
 +#ifndef MADV_DONTDUMP
@@ -14,4 +14,5 @@ diff -Nrup a/mem.c b/mem.c
 +
  #include "xlat/madvise_cmds.h"
  
- int
+ SYS_FUNC(madvise)
+Only in b: mem.c.orig

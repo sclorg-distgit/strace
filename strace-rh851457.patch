@@ -1,7 +1,7 @@
 diff -Nrup a/defs.h b/defs.h
---- a/defs.h	2015-03-05 21:19:01.000000000 -0500
-+++ b/defs.h	2015-07-08 22:19:03.109786388 -0400
-@@ -229,6 +229,9 @@ struct tcb {
+--- a/defs.h	2016-05-29 20:29:14.000000000 -0400
++++ b/defs.h	2016-07-22 16:52:17.891092163 -0400
+@@ -294,6 +294,9 @@ struct tcb {
  	int pid;		/* If 0, this tcb is free */
  	int qual_flg;		/* qual_flags[scno] or DEFAULT_QUAL_FLAGS + RAW */
  	int u_error;		/* Error code */
@@ -12,10 +12,10 @@ diff -Nrup a/defs.h b/defs.h
  	long u_arg[MAX_ARGS];	/* System call arguments */
  #if defined(LINUX_MIPSN32) || defined(X32)
 diff -Nrup a/strace.c b/strace.c
---- a/strace.c	2015-02-28 09:50:09.000000000 -0500
-+++ b/strace.c	2015-07-10 21:55:03.192199553 -0400
-@@ -2029,17 +2029,40 @@ startup_tcb(struct tcb *tcp)
- 	return true;
+--- a/strace.c	2016-05-26 11:34:28.000000000 -0400
++++ b/strace.c	2016-07-22 16:52:17.895092175 -0400
+@@ -2095,17 +2095,40 @@ startup_tcb(struct tcb *tcp)
+ 	}
  }
  
 +static int remembered_pid;
@@ -58,7 +58,7 @@ diff -Nrup a/strace.c b/strace.c
  	struct rusage ru;
  
  	if (interrupted)
-@@ -2050,14 +2073,24 @@ trace(void)
+@@ -2134,14 +2157,24 @@ trace(void)
  
  	if (interactive)
  		sigprocmask(SIG_SETMASK, &empty_set, NULL);
@@ -85,7 +85,7 @@ diff -Nrup a/strace.c b/strace.c
  		if (nprocs == 0 && wait_errno == ECHILD)
  			return false;
  		/*
-@@ -2071,7 +2104,7 @@ trace(void)
+@@ -2155,7 +2188,7 @@ trace(void)
  	if (pid == popen_pid) {
  		if (!WIFSTOPPED(status))
  			popen_pid = 0;
@@ -94,7 +94,7 @@ diff -Nrup a/strace.c b/strace.c
  	}
  
  	if (debug_flag)
-@@ -2083,14 +2116,9 @@ trace(void)
+@@ -2167,14 +2200,9 @@ trace(void)
  	if (!tcp) {
  		tcp = maybe_allocate_tcb(pid, status);
  		if (!tcp)
@@ -110,7 +110,7 @@ diff -Nrup a/strace.c b/strace.c
  	event = (unsigned int) status >> 16;
  
  	if (event == PTRACE_EVENT_EXEC) {
-@@ -2114,29 +2142,86 @@ trace(void)
+@@ -2198,29 +2226,86 @@ trace(void)
  
  		if (detach_on_execve && !skip_one_b_execve) {
  			detach(tcp); /* do "-b execve" thingy */
@@ -203,7 +203,7 @@ diff -Nrup a/strace.c b/strace.c
  	}
  
  	if (!WIFSTOPPED(status)) {
-@@ -2146,7 +2231,7 @@ trace(void)
+@@ -2230,7 +2315,7 @@ trace(void)
  		 */
  		error_msg("pid %u not stopped!", pid);
  		droptcb(tcp);
@@ -212,7 +212,7 @@ diff -Nrup a/strace.c b/strace.c
  	}
  
  	/* Is this the very first time we see this tracee stopped? */
-@@ -2223,7 +2308,7 @@ show_stopsig:
+@@ -2308,7 +2393,7 @@ show_stopsig:
  				exit_code = 1;
  				return false;
  			}
@@ -221,7 +221,7 @@ diff -Nrup a/strace.c b/strace.c
  		}
  		/* We don't have PTRACE_LISTEN support... */
  		goto restart_tracee;
-@@ -2249,7 +2334,7 @@ show_stopsig:
+@@ -2334,7 +2419,7 @@ show_stopsig:
  		 * we can let this process to report its death to us
  		 * normally, via WIFEXITED or WIFSIGNALED wait status.
  		 */
@@ -230,7 +230,7 @@ diff -Nrup a/strace.c b/strace.c
  	}
  
  restart_tracee_with_sig_0:
-@@ -2262,6 +2347,8 @@ restart_tracee:
+@@ -2347,6 +2432,8 @@ restart_tracee:
  		return false;
  	}
  
