@@ -1,0 +1,24 @@
+diff -rup a/Makefile.am b/Makefile.am
+--- a/Makefile.am	2016-05-28 06:29:30.000000000 -0400
++++ b/Makefile.am	2016-07-22 16:46:33.499983037 -0400
+@@ -45,7 +45,7 @@ OS		= linux
+ ARCH		= @arch@
+ 
+ ACLOCAL_AMFLAGS = -I m4
+-AM_CFLAGS = $(WARN_CFLAGS)
++AM_CFLAGS = $(WARN_CFLAGS) -fno-strict-aliasing
+ AM_CPPFLAGS = -I$(builddir)/$(OS)/$(ARCH) \
+ 	      -I$(srcdir)/$(OS)/$(ARCH) \
+ 	      -I$(builddir)/$(OS) \
+diff -rup a/Makefile.in b/Makefile.in
+--- a/Makefile.in	2016-05-31 07:35:57.000000000 -0400
++++ b/Makefile.in	2016-07-22 16:46:33.509983070 -0400
+@@ -616,7 +616,7 @@ OS = linux
+ # ARCH is `i386', `m68k', `sparc', etc.
+ ARCH = @arch@
+ ACLOCAL_AMFLAGS = -I m4
+-AM_CFLAGS = $(WARN_CFLAGS)
++AM_CFLAGS = $(WARN_CFLAGS) -fno-strict-aliasing
+ AM_CPPFLAGS = -I$(builddir)/$(OS)/$(ARCH) \
+ 	      -I$(srcdir)/$(OS)/$(ARCH) \
+ 	      -I$(builddir)/$(OS) \

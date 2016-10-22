@@ -1,0 +1,18 @@
+diff -rup a/mem.c b/mem.c
+--- a/mem.c	2016-05-16 19:47:34.000000000 -0400
++++ b/mem.c	2016-07-22 17:15:03.874544654 -0400
+@@ -207,6 +207,13 @@ SYS_FUNC(mremap)
+ 	return RVAL_DECODED | RVAL_HEX;
+ }
+ 
++#ifndef MADV_DONTDUMP
++#define MADV_DONTDUMP 16
++#endif
++#ifndef MADV_DODUMP
++#define MADV_DODUMP 17
++#endif
++
+ #include "xlat/madvise_cmds.h"
+ 
+ SYS_FUNC(madvise)
+Only in b: mem.c.orig

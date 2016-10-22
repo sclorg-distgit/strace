@@ -1,0 +1,66 @@
+diff -rup a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2016-07-22 17:03:00.000000000 -0400
++++ b/tests/Makefile.am	2016-07-22 17:12:48.577093495 -0400
+@@ -594,7 +594,6 @@ DECODER_TESTS = \
+ 	times.test \
+ 	truncate.test \
+ 	truncate64.test \
+-	uio.test \
+ 	umask.test \
+ 	umount.test \
+ 	umount2.test \
+diff -rup a/tests/Makefile.in b/tests/Makefile.in
+--- a/tests/Makefile.in	2016-07-22 17:03:05.000000000 -0400
++++ b/tests/Makefile.in	2016-07-22 17:12:57.945124915 -0400
+@@ -2103,7 +2103,6 @@ DECODER_TESTS = \
+ 	times.test \
+ 	truncate.test \
+ 	truncate64.test \
+-	uio.test \
+ 	umask.test \
+ 	umount.test \
+ 	umount2.test \
+diff -rup a/tests-m32/Makefile.am b/tests-m32/Makefile.am
+--- a/tests-m32/Makefile.am	2016-07-22 17:02:36.000000000 -0400
++++ b/tests-m32/Makefile.am	2016-07-22 17:12:09.252961282 -0400
+@@ -594,7 +594,6 @@ DECODER_TESTS = \
+ 	times.test \
+ 	truncate.test \
+ 	truncate64.test \
+-	uio.test \
+ 	umask.test \
+ 	umount.test \
+ 	umount2.test \
+diff -rup a/tests-m32/Makefile.in b/tests-m32/Makefile.in
+--- a/tests-m32/Makefile.in	2016-07-22 17:02:44.000000000 -0400
++++ b/tests-m32/Makefile.in	2016-07-22 17:12:22.068004420 -0400
+@@ -2103,7 +2103,6 @@ DECODER_TESTS = \
+ 	times.test \
+ 	truncate.test \
+ 	truncate64.test \
+-	uio.test \
+ 	umask.test \
+ 	umount.test \
+ 	umount2.test \
+diff -rup a/tests-mx32/Makefile.am b/tests-mx32/Makefile.am
+--- a/tests-mx32/Makefile.am	2016-07-22 17:02:50.000000000 -0400
++++ b/tests-mx32/Makefile.am	2016-07-22 17:12:31.110034827 -0400
+@@ -594,7 +594,6 @@ DECODER_TESTS = \
+ 	times.test \
+ 	truncate.test \
+ 	truncate64.test \
+-	uio.test \
+ 	umask.test \
+ 	umount.test \
+ 	umount2.test \
+diff -rup a/tests-mx32/Makefile.in b/tests-mx32/Makefile.in
+--- a/tests-mx32/Makefile.in	2016-07-22 17:02:56.000000000 -0400
++++ b/tests-mx32/Makefile.in	2016-07-22 17:12:38.169058548 -0400
+@@ -2103,7 +2103,6 @@ DECODER_TESTS = \
+ 	times.test \
+ 	truncate.test \
+ 	truncate64.test \
+-	uio.test \
+ 	umask.test \
+ 	umount.test \
+ 	umount2.test \
