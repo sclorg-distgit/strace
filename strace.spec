@@ -3,7 +3,7 @@
 Summary: Tracks and displays system calls associated with a running process
 Name: %{?scl_prefix}strace
 Version: 4.12
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: BSD
 Group: Development/Debuggers
 URL: http://sourceforge.net/projects/strace/
@@ -30,6 +30,11 @@ Patch1007: strace-no-uio-tests.patch
 # and MADV_DONTDUMP.
 Patch2000: strace-rh921550.patch
 
+Patch2001: strace-4.12-vhangup.patch
+Patch2002: strace-4.12-chown.patch
+
+Patch3000: strace-no-setgid-rhel6.patch
+Patch3001: strace-rpmbuild-m64.patch
 
 # In the past we had a separate strace64 package, these days the
 # stndard 64 bit build provides that functionality.  For tracing
@@ -75,6 +80,12 @@ This package provides the `strace32' program to trace 32-bit processes on
 %patch1005 -p1
 %patch1007 -p1
 %patch2000 -p1
+%patch2001 -p1
+%patch2002 -p1
+%if 0%{?rhel} == 6
+%patch3000 -p1
+%endif
+%patch3001 -p1
 
 %build
 %configure
@@ -121,6 +132,12 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Fri Aug 12 2016 DJ Delorie <dj@redhat.com> - 4.12-3
+- Merge upstream patches for vhangup and chown
+- Skip some tests on older kernels (RHEL 6)
+- Remove -m64 that rpm macros adds
+- Duplicate vhangup/chown patch for -m32 also.
+
 * Wed Jul 27 2016 Jeff Law <law@redhat.com> - 4.12-2
 - Disable testing on s390x and ppc64 until we can determine
   root causes of their failures.

@@ -1,0 +1,30 @@
+commit 58d0ee2ea5499cf532a03bed39187b1934b06a07
+Author: Dmitry V. Levin <ldv@altlinux.org>
+Date:   Tue Jul 26 09:58:37 2016 +0000
+
+    tests: fix chown.test
+    
+    * tests/chown.test: Fix the value specified for strace -a parameter.
+    
+    Reported-by: Yun-Chih Chen <b03902074@ntu.edu.tw>
+
+diff --git a/tests/chown.test b/tests/chown.test
+index 1a94c32..eb356ce 100755
+--- a/tests/chown.test
++++ b/tests/chown.test
+@@ -3,4 +3,4 @@
+ # Check chown syscall decoding.
+ 
+ . "${srcdir=.}/init.sh"
+-run_strace_match_diff -a29
++run_strace_match_diff -a28
+diff --git a/tests/chown.test b/tests/chown.test
+index 1a94c32..eb356ce 100755
+--- a/tests-m32/chown.test
++++ b/tests-m32/chown.test
+@@ -3,4 +3,4 @@
+ # Check chown syscall decoding.
+ 
+ . "${srcdir=.}/init.sh"
+-run_strace_match_diff -a29
++run_strace_match_diff -a28
