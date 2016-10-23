@@ -1,0 +1,44 @@
+diff -rup a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2016-08-22 23:14:27.000000000 -0400
++++ b/tests/Makefile.am	2016-08-22 23:19:32.038554367 -0400
+@@ -551,9 +551,7 @@ DECODER_TESTS = \
+ 	setfsgid32.test \
+ 	setfsuid.test \
+ 	setfsuid32.test \
+-	setgid.test \
+ 	setgid32.test \
+-	setgroups.test \
+ 	setgroups32.test \
+ 	sethostname.test \
+ 	setregid.test \
+@@ -564,7 +562,6 @@ DECODER_TESTS = \
+ 	setresuid32.test \
+ 	setreuid.test \
+ 	setreuid32.test \
+-	setuid.test \
+ 	setuid32.test \
+ 	shmxt.test \
+ 	sigaction.test \
+Only in b/tests: Makefile.am~
+diff -rup a/tests/Makefile.in b/tests/Makefile.in
+--- a/tests/Makefile.in	2016-08-22 23:14:27.000000000 -0400
++++ b/tests/Makefile.in	2016-08-22 23:19:44.907609861 -0400
+@@ -2060,9 +2060,7 @@ DECODER_TESTS = \
+ 	setfsgid32.test \
+ 	setfsuid.test \
+ 	setfsuid32.test \
+-	setgid.test \
+ 	setgid32.test \
+-	setgroups.test \
+ 	setgroups32.test \
+ 	sethostname.test \
+ 	setregid.test \
+@@ -2073,7 +2071,6 @@ DECODER_TESTS = \
+ 	setresuid32.test \
+ 	setreuid.test \
+ 	setreuid32.test \
+-	setuid.test \
+ 	setuid32.test \
+ 	shmxt.test \
+ 	sigaction.test \
+Only in b/tests: Makefile.in~
