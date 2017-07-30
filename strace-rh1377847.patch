@@ -1,0 +1,14 @@
+diff -rup a/open.c b/open.c
+--- a/open.c	2017-05-22 13:33:51.000000000 -0400
++++ b/open.c	2017-06-16 21:39:19.443745779 -0400
+@@ -41,6 +41,10 @@
+ #undef O_ACCMODE
+ #define O_ACCMODE 03
+ 
++#ifndef O_TMPFILE
++#define O_TMPFILE 020000000
++#endif
++
+ #ifdef O_LARGEFILE
+ # if O_LARGEFILE == 0          /* biarch platforms in 64-bit mode */
+ #  undef O_LARGEFILE

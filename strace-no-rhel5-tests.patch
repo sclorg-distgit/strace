@@ -1,0 +1,2145 @@
+diff -rup a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2017-06-19 17:47:03.000000000 -0400
++++ b/tests/Makefile.am	2017-06-19 17:55:34.753705183 -0400
+@@ -109,7 +109,6 @@ check_PROGRAMS = $(PURE_EXECUTABLES) \
+ 	prctl-seccomp-filter-v \
+ 	prctl-seccomp-strict \
+ 	print_maxfd \
+-	qual_fault \
+ 	qual_inject-error-signal \
+ 	qual_inject-retval \
+ 	qual_inject-signal \
+@@ -240,7 +239,6 @@ MISC_TESTS = \
+ 	options-syntax.test \
+ 	pc.test \
+ 	qual_fault-syntax.test \
+-	qual_fault.test \
+ 	qual_inject-error-signal.test \
+ 	qual_inject-retval.test \
+ 	qual_inject-signal.test \
+diff -rup a/tests/Makefile.in b/tests/Makefile.in
+--- a/tests/Makefile.in	2017-06-19 17:47:03.000000000 -0400
++++ b/tests/Makefile.in	2017-06-19 17:55:34.756705186 -0400
+@@ -152,15 +152,15 @@ check_PROGRAMS = $(am__EXEEXT_1) answer$
+ 	perf_event_open_nonverbose$(EXEEXT) \
+ 	perf_event_open_unabbrev$(EXEEXT) ppoll-v$(EXEEXT) \
+ 	prctl-seccomp-filter-v$(EXEEXT) prctl-seccomp-strict$(EXEEXT) \
+-	print_maxfd$(EXEEXT) qual_fault$(EXEEXT) \
+-	qual_inject-error-signal$(EXEEXT) qual_inject-retval$(EXEEXT) \
+-	qual_inject-signal$(EXEEXT) qual_signal$(EXEEXT) \
+-	quotactl-v$(EXEEXT) quotactl-xfs-v$(EXEEXT) \
+-	redirect-fds$(EXEEXT) restart_syscall$(EXEEXT) \
+-	scm_rights$(EXEEXT) seccomp-filter-v$(EXEEXT) \
+-	seccomp-strict$(EXEEXT) set_ptracer_any$(EXEEXT) \
+-	signal_receive$(EXEEXT) sleep$(EXEEXT) stack-fcall$(EXEEXT) \
+-	threads-execve$(EXEEXT) unix-pair-send-recv$(EXEEXT) \
++	print_maxfd$(EXEEXT) qual_inject-error-signal$(EXEEXT) \
++	qual_inject-retval$(EXEEXT) qual_inject-signal$(EXEEXT) \
++	qual_signal$(EXEEXT) quotactl-v$(EXEEXT) \
++	quotactl-xfs-v$(EXEEXT) redirect-fds$(EXEEXT) \
++	restart_syscall$(EXEEXT) scm_rights$(EXEEXT) \
++	seccomp-filter-v$(EXEEXT) seccomp-strict$(EXEEXT) \
++	set_ptracer_any$(EXEEXT) signal_receive$(EXEEXT) \
++	sleep$(EXEEXT) stack-fcall$(EXEEXT) threads-execve$(EXEEXT) \
++	unix-pair-send-recv$(EXEEXT) \
+ 	unix-pair-sendto-recvfrom$(EXEEXT) vfork-f$(EXEEXT) \
+ 	wait4-v$(EXEEXT) waitid-v$(EXEEXT)
+ TESTS = $(GEN_TESTS) $(DECODER_TESTS) $(MISC_TESTS) $(am__EXEEXT_2)
+@@ -1278,10 +1278,6 @@ pwritev_SOURCES = pwritev.c
+ pwritev_OBJECTS = pwritev-pwritev.$(OBJEXT)
+ pwritev_LDADD = $(LDADD)
+ pwritev_DEPENDENCIES = libtests.a
+-qual_fault_SOURCES = qual_fault.c
+-qual_fault_OBJECTS = qual_fault.$(OBJEXT)
+-qual_fault_LDADD = $(LDADD)
+-qual_fault_DEPENDENCIES = libtests.a
+ qual_inject_error_signal_SOURCES = qual_inject-error-signal.c
+ qual_inject_error_signal_OBJECTS = qual_inject-error-signal.$(OBJEXT)
+ qual_inject_error_signal_LDADD = $(LDADD)
+@@ -1947,16 +1943,15 @@ SOURCES = $(libtests_a_SOURCES) _newsele
+ 	prctl-tsc.c pread64-pwrite64.c preadv.c preadv-pwritev.c \
+ 	preadv2-pwritev2.c print_maxfd.c printstr.c prlimit64.c \
+ 	process_vm_readv.c process_vm_writev.c pselect6.c ptrace.c \
+-	pwritev.c qual_fault.c qual_inject-error-signal.c \
+-	qual_inject-retval.c qual_inject-signal.c qual_signal.c \
+-	quotactl.c quotactl-v.c quotactl-xfs.c quotactl-xfs-v.c \
+-	read-write.c readahead.c readdir.c readlink.c readlinkat.c \
+-	readv.c reboot.c recvfrom.c recvmmsg-timeout.c recvmsg.c \
+-	redirect-fds.c remap_file_pages.c rename.c renameat.c \
+-	renameat2.c request_key.c restart_syscall.c rmdir.c \
+-	rt_sigpending.c rt_sigprocmask.c rt_sigqueueinfo.c \
+-	rt_sigreturn.c rt_sigsuspend.c rt_sigtimedwait.c \
+-	rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
++	pwritev.c qual_inject-error-signal.c qual_inject-retval.c \
++	qual_inject-signal.c qual_signal.c quotactl.c quotactl-v.c \
++	quotactl-xfs.c quotactl-xfs-v.c read-write.c readahead.c \
++	readdir.c readlink.c readlinkat.c readv.c reboot.c recvfrom.c \
++	recvmmsg-timeout.c recvmsg.c redirect-fds.c remap_file_pages.c \
++	rename.c renameat.c renameat2.c request_key.c \
++	restart_syscall.c rmdir.c rt_sigpending.c rt_sigprocmask.c \
++	rt_sigqueueinfo.c rt_sigreturn.c rt_sigsuspend.c \
++	rt_sigtimedwait.c rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
+ 	sched_rr_get_interval.c sched_xetaffinity.c sched_xetattr.c \
+ 	sched_xetparam.c sched_xetscheduler.c sched_yield.c \
+ 	scm_rights.c seccomp-filter.c seccomp-filter-v.c \
+@@ -2034,16 +2029,15 @@ DIST_SOURCES = $(libtests_a_SOURCES) _ne
+ 	prctl-tsc.c pread64-pwrite64.c preadv.c preadv-pwritev.c \
+ 	preadv2-pwritev2.c print_maxfd.c printstr.c prlimit64.c \
+ 	process_vm_readv.c process_vm_writev.c pselect6.c ptrace.c \
+-	pwritev.c qual_fault.c qual_inject-error-signal.c \
+-	qual_inject-retval.c qual_inject-signal.c qual_signal.c \
+-	quotactl.c quotactl-v.c quotactl-xfs.c quotactl-xfs-v.c \
+-	read-write.c readahead.c readdir.c readlink.c readlinkat.c \
+-	readv.c reboot.c recvfrom.c recvmmsg-timeout.c recvmsg.c \
+-	redirect-fds.c remap_file_pages.c rename.c renameat.c \
+-	renameat2.c request_key.c restart_syscall.c rmdir.c \
+-	rt_sigpending.c rt_sigprocmask.c rt_sigqueueinfo.c \
+-	rt_sigreturn.c rt_sigsuspend.c rt_sigtimedwait.c \
+-	rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
++	pwritev.c qual_inject-error-signal.c qual_inject-retval.c \
++	qual_inject-signal.c qual_signal.c quotactl.c quotactl-v.c \
++	quotactl-xfs.c quotactl-xfs-v.c read-write.c readahead.c \
++	readdir.c readlink.c readlinkat.c readv.c reboot.c recvfrom.c \
++	recvmmsg-timeout.c recvmsg.c redirect-fds.c remap_file_pages.c \
++	rename.c renameat.c renameat2.c request_key.c \
++	restart_syscall.c rmdir.c rt_sigpending.c rt_sigprocmask.c \
++	rt_sigqueueinfo.c rt_sigreturn.c rt_sigsuspend.c \
++	rt_sigtimedwait.c rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
+ 	sched_rr_get_interval.c sched_xetaffinity.c sched_xetattr.c \
+ 	sched_xetparam.c sched_xetscheduler.c sched_yield.c \
+ 	scm_rights.c seccomp-filter.c seccomp-filter-v.c \
+@@ -2845,32 +2839,31 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	access.gen.test acct.gen.test add_key.gen.test \
+ 	adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test \
+ 	btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test \
+-	chroot.gen.test clock.gen.test clock_adjtime.gen.test \
++	chroot.gen.test clock_adjtime.gen.test \
+ 	clock_nanosleep.gen.test clock_xettime.gen.test \
+ 	copy_file_range.gen.test creat.gen.test delete_module.gen.test \
+ 	dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test \
+ 	epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test \
+ 	epoll_wait.gen.test erestartsys.gen.test execveat.gen.test \
+ 	execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test \
+-	fallocate.gen.test fanotify_init.gen.test \
+-	fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test \
+-	fchmodat.gen.test fchown.gen.test fchown32.gen.test \
+-	fchownat.gen.test fcntl.gen.test fcntl64.gen.test \
+-	fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test \
+-	finit_module.gen.test flock.gen.test fork-f.gen.test \
+-	fstat.gen.test fstat64.gen.test fstatat64.gen.test \
+-	fstatfs.gen.test fstatfs64.gen.test fsync.gen.test \
+-	ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test \
+-	get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test \
+-	getdents.gen.test getdents64.gen.test getegid.gen.test \
+-	getegid32.gen.test geteuid.gen.test geteuid32.gen.test \
+-	getgid.gen.test getgid32.gen.test getgroups.gen.test \
+-	getgroups32.gen.test getpeername.gen.test getpgrp.gen.test \
+-	getpid.gen.test getppid.gen.test getrandom.gen.test \
+-	getresgid.gen.test getresgid32.gen.test getresuid.gen.test \
+-	getresuid32.gen.test getrlimit.gen.test getrusage.gen.test \
+-	getsid.gen.test getsockname.gen.test gettid.gen.test \
+-	getuid32.gen.test getxxid.gen.test inet-cmsg.gen.test \
++	fallocate.gen.test fanotify_mark.gen.test fchdir.gen.test \
++	fchmod.gen.test fchmodat.gen.test fchown.gen.test \
++	fchown32.gen.test fchownat.gen.test fcntl.gen.test \
++	fcntl64.gen.test fdatasync.gen.test file_handle.gen.test \
++	file_ioctl.gen.test finit_module.gen.test flock.gen.test \
++	fork-f.gen.test fstat.gen.test fstat64.gen.test \
++	fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test \
++	fsync.gen.test ftruncate.gen.test ftruncate64.gen.test \
++	futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test \
++	getcwd.gen.test getdents.gen.test getdents64.gen.test \
++	getegid.gen.test getegid32.gen.test geteuid.gen.test \
++	geteuid32.gen.test getgid.gen.test getgid32.gen.test \
++	getgroups.gen.test getgroups32.gen.test getpeername.gen.test \
++	getpgrp.gen.test getpid.gen.test getppid.gen.test \
++	getrandom.gen.test getresgid.gen.test getresgid32.gen.test \
++	getresuid.gen.test getresuid32.gen.test getrlimit.gen.test \
++	getrusage.gen.test getsid.gen.test getsockname.gen.test \
++	gettid.gen.test getuid32.gen.test getxxid.gen.test \
+ 	init_module.gen.test inotify.gen.test inotify_init1.gen.test \
+ 	int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test \
+ 	ioctl_evdev-v.gen.test ioctl_loop.gen.test \
+@@ -2900,24 +2893,20 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	oldlstat.gen.test oldstat.gen.test open.gen.test \
+ 	openat.gen.test osf_utimes.gen.test pause.gen.test \
+ 	perf_event_open.gen.test perf_event_open_nonverbose.gen.test \
+-	perf_event_open_unabbrev.gen.test pipe2.gen.test \
+-	pkey_alloc.gen.test pkey_free.gen.test pkey_mprotect.gen.test \
+-	ppoll.gen.test ppoll-v.gen.test pread64-pwrite64.gen.test \
+-	preadv.gen.test preadv-pwritev.gen.test \
+-	preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test \
+-	process_vm_readv.gen.test process_vm_writev.gen.test \
+-	pselect6.gen.test ptrace.gen.test pwritev.gen.test \
+-	quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test \
++	pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test \
++	pread64-pwrite64.gen.test preadv2-pwritev2.gen.test \
++	printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test \
++	process_vm_writev.gen.test ptrace.gen.test quotactl.gen.test \
++	quotactl-v.gen.test quotactl-xfs.gen.test \
+ 	quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test \
+ 	readdir.gen.test readlink.gen.test readlinkat.gen.test \
+ 	reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test \
+-	recvmsg.gen.test regex.gen.test remap_file_pages.gen.test \
+-	rename.gen.test renameat.gen.test renameat2.gen.test \
+-	request_key.gen.test rmdir.gen.test rt_sigpending.gen.test \
+-	rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test \
+-	rt_sigreturn.gen.test rt_sigsuspend.gen.test \
+-	rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test \
+-	sched.gen.test sched_get_priority_mxx.gen.test \
++	recvmsg.gen.test remap_file_pages.gen.test rename.gen.test \
++	renameat.gen.test renameat2.gen.test request_key.gen.test \
++	rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test \
++	rt_sigqueueinfo.gen.test rt_sigreturn.gen.test \
++	rt_sigsuspend.gen.test rt_sigtimedwait.gen.test \
++	rt_tgsigqueueinfo.gen.test sched_get_priority_mxx.gen.test \
+ 	sched_rr_get_interval.gen.test sched_xetaffinity.gen.test \
+ 	sched_xetattr.gen.test sched_xetparam.gen.test \
+ 	sched_xetscheduler.gen.test sched_yield.gen.test \
+@@ -2932,31 +2921,25 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	setresuid.gen.test setresuid32.gen.test setreuid.gen.test \
+ 	setreuid32.gen.test setrlimit.gen.test setuid.gen.test \
+ 	setuid32.gen.test shmxt.gen.test shutdown.gen.test \
+-	siginfo.gen.test signal_receive.gen.test signalfd4.gen.test \
+-	sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test \
+-	splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test \
++	siginfo.gen.test signal_receive.gen.test sigreturn.gen.test \
++	sigsuspend.gen.test socketcall.gen.test splice.gen.test \
++	stat.gen.test stat64.gen.test statfs.gen.test \
+ 	statfs64.gen.test statx.gen.test swap.gen.test \
+ 	sxetmask.gen.test symlink.gen.test symlinkat.gen.test \
+ 	sync.gen.test sync_file_range.gen.test \
+ 	sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test \
+ 	tee.gen.test time.gen.test timer_create.gen.test \
+ 	timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test \
+-	times-fail.gen.test trace_fstat.gen.test \
+-	trace_fstatfs.gen.test trace_lstat.gen.test \
+-	trace_question.gen.test trace_stat.gen.test \
+-	trace_stat_like.gen.test trace_statfs.gen.test \
+-	trace_statfs_like.gen.test truncate.gen.test \
+-	truncate64.gen.test ugetrlimit.gen.test umask.gen.test \
+-	umoven-illptr.gen.test umovestr-illptr.gen.test \
+-	umovestr3.gen.test unlink.gen.test unlinkat.gen.test \
+-	unshare.gen.test userfaultfd.gen.test ustat.gen.test \
+-	utime.gen.test utimensat.gen.test utimes.gen.test \
+-	vfork-f.gen.test vhangup.gen.test vmsplice.gen.test \
+-	wait4.gen.test wait4-v.gen.test waitid.gen.test \
+-	waitid-v.gen.test waitpid.gen.test xattr.gen.test \
+-	xattr-strings.gen.test xet_robust_list.gen.test \
+-	xetitimer.gen.test xetpgid.gen.test xetpriority.gen.test \
+-	xettimeofday.gen.test
++	times-fail.gen.test truncate.gen.test truncate64.gen.test \
++	ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test \
++	umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test \
++	unlinkat.gen.test unshare.gen.test userfaultfd.gen.test \
++	ustat.gen.test utime.gen.test utimensat.gen.test \
++	utimes.gen.test vfork-f.gen.test vhangup.gen.test \
++	vmsplice.gen.test wait4.gen.test wait4-v.gen.test \
++	waitid.gen.test waitid-v.gen.test waitpid.gen.test \
++	xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test \
++	xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
+ @USE_LIBUNWIND_FALSE@LIBUNWIND_TESTS = 
+ @USE_LIBUNWIND_TRUE@LIBUNWIND_TESTS = strace-k.test
+ DECODER_TESTS = \
+@@ -3034,7 +3017,6 @@ MISC_TESTS = \
+ 	options-syntax.test \
+ 	pc.test \
+ 	qual_fault-syntax.test \
+-	qual_fault.test \
+ 	qual_inject-error-signal.test \
+ 	qual_inject-retval.test \
+ 	qual_inject-signal.test \
+@@ -4156,10 +4138,6 @@ pwritev$(EXEEXT): $(pwritev_OBJECTS) $(p
+ 	@rm -f pwritev$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(pwritev_OBJECTS) $(pwritev_LDADD) $(LIBS)
+ 
+-qual_fault$(EXEEXT): $(qual_fault_OBJECTS) $(qual_fault_DEPENDENCIES) $(EXTRA_qual_fault_DEPENDENCIES) 
+-	@rm -f qual_fault$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(qual_fault_OBJECTS) $(qual_fault_LDADD) $(LIBS)
+-
+ qual_inject-error-signal$(EXEEXT): $(qual_inject_error_signal_OBJECTS) $(qual_inject_error_signal_DEPENDENCIES) $(EXTRA_qual_inject_error_signal_DEPENDENCIES) 
+ 	@rm -f qual_inject-error-signal$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(qual_inject_error_signal_OBJECTS) $(qual_inject_error_signal_LDADD) $(LIBS)
+@@ -5007,7 +4985,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pselect6.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptrace.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pwritev-pwritev.Po@am__quote@
+-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_fault.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-error-signal.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-retval.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-signal.Po@am__quote@
+@@ -6078,9 +6055,6 @@ $(srcdir)/chown32.gen.test: $(abs_srcdir
+ $(srcdir)/chroot.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/clock.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/clock_adjtime.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6141,9 +6115,6 @@ $(srcdir)/fadvise64_64.gen.test: $(abs_s
+ $(srcdir)/fallocate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/fanotify_init.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/fanotify_mark.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6303,9 +6274,6 @@ $(srcdir)/getuid32.gen.test: $(abs_srcdi
+ $(srcdir)/getxxid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/inet-cmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/init_module.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6546,9 +6514,6 @@ $(srcdir)/perf_event_open.gen.test: $(ab
+ $(srcdir)/perf_event_open_nonverbose.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/perf_event_open_unabbrev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pipe2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6558,24 +6523,9 @@ $(srcdir)/pkey_alloc.gen.test: $(abs_src
+ $(srcdir)/pkey_free.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pkey_mprotect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll-v.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pread64-pwrite64.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/preadv.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/preadv-pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/preadv2-pwritev2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6591,15 +6541,9 @@ $(srcdir)/process_vm_readv.gen.test: $(a
+ $(srcdir)/process_vm_writev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pselect6.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/ptrace.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/quotactl.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6639,9 +6583,6 @@ $(srcdir)/recvmmsg-timeout.gen.test: $(a
+ $(srcdir)/recvmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/regex.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/remap_file_pages.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6681,9 +6622,6 @@ $(srcdir)/rt_sigtimedwait.gen.test: $(ab
+ $(srcdir)/rt_tgsigqueueinfo.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/sched.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sched_get_priority_mxx.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6804,9 +6742,6 @@ $(srcdir)/siginfo.gen.test: $(abs_srcdir
+ $(srcdir)/signal_receive.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/signalfd4.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sigreturn.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6882,30 +6817,6 @@ $(srcdir)/times.gen.test: $(abs_srcdir)/
+ $(srcdir)/times-fail.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/trace_fstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_fstatfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_lstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_question.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/truncate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6984,9 +6895,6 @@ $(srcdir)/xattr-strings.gen.test: $(abs_
+ $(srcdir)/xet_robust_list.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/xetitimer.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/xetpgid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+diff -rup a/tests/fanotify_init.gen.test b/tests/fanotify_init.gen.test
+--- a/tests/fanotify_init.gen.test	2017-05-24 15:55:56.000000000 -0400
++++ b/tests/fanotify_init.gen.test	2017-06-19 17:55:34.757705187 -0400
+@@ -1,4 +1,4 @@
+ #!/bin/sh -efu
+-# Generated by ./tests/gen_tests.sh from ./tests/gen_tests.in (fanotify_init ); do not edit.
++# Generated by tests/gen_tests.sh from tests/gen_tests.in (fanotify_init ); do not edit.
+ . "${srcdir=.}/init.sh"
+ run_strace_match_diff 
+diff -rup a/tests/gen_tests.am b/tests/gen_tests.am
+--- a/tests/gen_tests.am	2017-06-19 17:47:03.000000000 -0400
++++ b/tests/gen_tests.am	2017-06-19 17:55:52.198721901 -0400
+@@ -1,5 +1,5 @@
+ # Generated by ./tests/gen_tests.sh from ./tests/gen_tests.in; do not edit.
+-GEN_TESTS = _newselect.gen.test accept.gen.test accept4.gen.test access.gen.test acct.gen.test add_key.gen.test adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test chroot.gen.test clock.gen.test clock_adjtime.gen.test clock_nanosleep.gen.test clock_xettime.gen.test copy_file_range.gen.test creat.gen.test delete_module.gen.test dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test epoll_wait.gen.test erestartsys.gen.test execveat.gen.test execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test fallocate.gen.test fanotify_init.gen.test fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test fchmodat.gen.test fchown.gen.test fchown32.gen.test fchownat.gen.test fcntl.gen.test fcntl64.gen.test fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test finit_module.gen.test flock.gen.test fork-f.gen.test fstat.gen.test fstat64.gen.test fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test fsync.gen.test ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test getdents.gen.test getdents64.gen.test getegid.gen.test getegid32.gen.test geteuid.gen.test geteuid32.gen.test getgid.gen.test getgid32.gen.test getgroups.gen.test getgroups32.gen.test getpeername.gen.test getpgrp.gen.test getpid.gen.test getppid.gen.test getrandom.gen.test getresgid.gen.test getresgid32.gen.test getresuid.gen.test getresuid32.gen.test getrlimit.gen.test getrusage.gen.test getsid.gen.test getsockname.gen.test gettid.gen.test getuid32.gen.test getxxid.gen.test inet-cmsg.gen.test init_module.gen.test inotify.gen.test inotify_init1.gen.test int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test ioctl_evdev-v.gen.test ioctl_loop.gen.test ioctl_loop-v.gen.test ioctl_mtd.gen.test ioctl_rtc.gen.test ioctl_rtc-v.gen.test ioctl_scsi.gen.test ioctl_sg_io_v3.gen.test ioctl_sg_io_v4.gen.test ioctl_uffdio.gen.test ioctl_v4l2.gen.test ioperm.gen.test iopl.gen.test ioprio.gen.test ip_mreq.gen.test ipc.gen.test ipc_msg.gen.test ipc_sem.gen.test ipc_shm.gen.test kcmp.gen.test kexec_file_load.gen.test kexec_load.gen.test keyctl.gen.test kill.gen.test lchown.gen.test lchown32.gen.test link.gen.test linkat.gen.test lookup_dcookie.gen.test lstat.gen.test lstat64.gen.test madvise.gen.test mbind.gen.test membarrier.gen.test memfd_create.gen.test migrate_pages.gen.test mincore.gen.test mkdir.gen.test mkdirat.gen.test mknod.gen.test mknodat.gen.test mlock.gen.test mlock2.gen.test mlockall.gen.test mmap64.gen.test mmsg.gen.test mmsg-silent.gen.test mmsg_name.gen.test mmsg_name-v.gen.test mount.gen.test move_pages.gen.test mq.gen.test mq_sendrecv.gen.test mq_sendrecv-read.gen.test mq_sendrecv-write.gen.test msg_control.gen.test msg_control-v.gen.test msg_name.gen.test munlockall.gen.test nanosleep.gen.test net-sockaddr.gen.test netlink_protocol.gen.test newfstatat.gen.test old_mmap.gen.test oldfstat.gen.test oldlstat.gen.test oldstat.gen.test open.gen.test openat.gen.test osf_utimes.gen.test pause.gen.test perf_event_open.gen.test perf_event_open_nonverbose.gen.test perf_event_open_unabbrev.gen.test pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test pkey_mprotect.gen.test ppoll.gen.test ppoll-v.gen.test pread64-pwrite64.gen.test preadv.gen.test preadv-pwritev.gen.test preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test process_vm_writev.gen.test pselect6.gen.test ptrace.gen.test pwritev.gen.test quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test readdir.gen.test readlink.gen.test readlinkat.gen.test reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test recvmsg.gen.test regex.gen.test remap_file_pages.gen.test rename.gen.test renameat.gen.test renameat2.gen.test request_key.gen.test rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test rt_sigreturn.gen.test rt_sigsuspend.gen.test rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test sched.gen.test sched_get_priority_mxx.gen.test sched_rr_get_interval.gen.test sched_xetaffinity.gen.test sched_xetattr.gen.test sched_xetparam.gen.test sched_xetscheduler.gen.test sched_yield.gen.test seccomp-filter.gen.test seccomp-filter-v.gen.test select.gen.test semop.gen.test sendfile.gen.test sendfile64.gen.test set_mempolicy.gen.test setdomainname.gen.test setfsgid.gen.test setfsgid32.gen.test setfsuid.gen.test setfsuid32.gen.test setgid.gen.test setgid32.gen.test setgroups.gen.test setgroups32.gen.test sethostname.gen.test setns.gen.test setregid.gen.test setregid32.gen.test setresgid.gen.test setresgid32.gen.test setresuid.gen.test setresuid32.gen.test setreuid.gen.test setreuid32.gen.test setrlimit.gen.test setuid.gen.test setuid32.gen.test shmxt.gen.test shutdown.gen.test siginfo.gen.test signal_receive.gen.test signalfd4.gen.test sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test statfs64.gen.test statx.gen.test swap.gen.test sxetmask.gen.test symlink.gen.test symlinkat.gen.test sync.gen.test sync_file_range.gen.test sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test tee.gen.test time.gen.test timer_create.gen.test timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test times-fail.gen.test trace_fstat.gen.test trace_fstatfs.gen.test trace_lstat.gen.test trace_question.gen.test trace_stat.gen.test trace_stat_like.gen.test trace_statfs.gen.test trace_statfs_like.gen.test truncate.gen.test truncate64.gen.test ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test unlinkat.gen.test unshare.gen.test userfaultfd.gen.test ustat.gen.test utime.gen.test utimensat.gen.test utimes.gen.test vfork-f.gen.test vhangup.gen.test vmsplice.gen.test wait4.gen.test wait4-v.gen.test waitid.gen.test waitid-v.gen.test waitpid.gen.test xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test xetitimer.gen.test xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
++GEN_TESTS = _newselect.gen.test accept.gen.test accept4.gen.test access.gen.test acct.gen.test add_key.gen.test adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test chroot.gen.test clock_adjtime.gen.test clock_nanosleep.gen.test clock_xettime.gen.test copy_file_range.gen.test creat.gen.test delete_module.gen.test dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test epoll_wait.gen.test erestartsys.gen.test execveat.gen.test execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test fallocate.gen.test fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test fchmodat.gen.test fchown.gen.test fchown32.gen.test fchownat.gen.test fcntl.gen.test fcntl64.gen.test fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test finit_module.gen.test flock.gen.test fork-f.gen.test fstat.gen.test fstat64.gen.test fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test fsync.gen.test ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test getdents.gen.test getdents64.gen.test getegid.gen.test getegid32.gen.test geteuid.gen.test geteuid32.gen.test getgid.gen.test getgid32.gen.test getgroups.gen.test getgroups32.gen.test getpeername.gen.test getpgrp.gen.test getpid.gen.test getppid.gen.test getrandom.gen.test getresgid.gen.test getresgid32.gen.test getresuid.gen.test getresuid32.gen.test getrlimit.gen.test getrusage.gen.test getsid.gen.test getsockname.gen.test gettid.gen.test getuid32.gen.test getxxid.gen.test init_module.gen.test inotify.gen.test inotify_init1.gen.test int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test ioctl_evdev-v.gen.test ioctl_loop.gen.test ioctl_loop-v.gen.test ioctl_mtd.gen.test ioctl_rtc.gen.test ioctl_rtc-v.gen.test ioctl_scsi.gen.test ioctl_sg_io_v3.gen.test ioctl_sg_io_v4.gen.test ioctl_uffdio.gen.test ioctl_v4l2.gen.test ioperm.gen.test iopl.gen.test ioprio.gen.test ip_mreq.gen.test ipc.gen.test ipc_msg.gen.test ipc_sem.gen.test ipc_shm.gen.test kcmp.gen.test kexec_file_load.gen.test kexec_load.gen.test keyctl.gen.test kill.gen.test lchown.gen.test lchown32.gen.test link.gen.test linkat.gen.test lookup_dcookie.gen.test lstat.gen.test lstat64.gen.test madvise.gen.test mbind.gen.test membarrier.gen.test memfd_create.gen.test migrate_pages.gen.test mincore.gen.test mkdir.gen.test mkdirat.gen.test mknod.gen.test mknodat.gen.test mlock.gen.test mlock2.gen.test mlockall.gen.test mmap64.gen.test mmsg.gen.test mmsg-silent.gen.test mmsg_name.gen.test mmsg_name-v.gen.test mount.gen.test move_pages.gen.test mq.gen.test mq_sendrecv.gen.test mq_sendrecv-read.gen.test mq_sendrecv-write.gen.test msg_control.gen.test msg_control-v.gen.test msg_name.gen.test munlockall.gen.test nanosleep.gen.test net-sockaddr.gen.test netlink_protocol.gen.test newfstatat.gen.test old_mmap.gen.test oldfstat.gen.test oldlstat.gen.test oldstat.gen.test open.gen.test openat.gen.test osf_utimes.gen.test pause.gen.test perf_event_open.gen.test perf_event_open_nonverbose.gen.test pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test pread64-pwrite64.gen.test preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test process_vm_writev.gen.test ptrace.gen.test quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test readdir.gen.test readlink.gen.test readlinkat.gen.test reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test recvmsg.gen.test remap_file_pages.gen.test rename.gen.test renameat.gen.test renameat2.gen.test request_key.gen.test rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test rt_sigreturn.gen.test rt_sigsuspend.gen.test rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test sched_get_priority_mxx.gen.test sched_rr_get_interval.gen.test sched_xetaffinity.gen.test sched_xetattr.gen.test sched_xetparam.gen.test sched_xetscheduler.gen.test sched_yield.gen.test seccomp-filter.gen.test seccomp-filter-v.gen.test select.gen.test semop.gen.test sendfile.gen.test sendfile64.gen.test set_mempolicy.gen.test setdomainname.gen.test setfsgid.gen.test setfsgid32.gen.test setfsuid.gen.test setfsuid32.gen.test setgid.gen.test setgid32.gen.test setgroups.gen.test setgroups32.gen.test sethostname.gen.test setns.gen.test setregid.gen.test setregid32.gen.test setresgid.gen.test setresgid32.gen.test setresuid.gen.test setresuid32.gen.test setreuid.gen.test setreuid32.gen.test setrlimit.gen.test setuid.gen.test setuid32.gen.test shmxt.gen.test shutdown.gen.test siginfo.gen.test signal_receive.gen.test sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test statfs64.gen.test statx.gen.test swap.gen.test sxetmask.gen.test symlink.gen.test symlinkat.gen.test sync.gen.test sync_file_range.gen.test sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test tee.gen.test time.gen.test timer_create.gen.test timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test times-fail.gen.test truncate.gen.test truncate64.gen.test ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test unlinkat.gen.test unshare.gen.test userfaultfd.gen.test ustat.gen.test utime.gen.test utimensat.gen.test utimes.gen.test vfork-f.gen.test vhangup.gen.test vmsplice.gen.test wait4.gen.test wait4-v.gen.test waitid.gen.test waitid-v.gen.test waitpid.gen.test xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
+ 
+ $(srcdir)/_newselect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+@@ -46,9 +46,6 @@ $(srcdir)/chown32.gen.test: $(abs_srcdir
+ $(srcdir)/chroot.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/clock.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/clock_adjtime.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -109,9 +106,6 @@ $(srcdir)/fadvise64_64.gen.test: $(abs_s
+ $(srcdir)/fallocate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/fanotify_init.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/fanotify_mark.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -271,9 +265,6 @@ $(srcdir)/getuid32.gen.test: $(abs_srcdi
+ $(srcdir)/getxxid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/inet-cmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/init_module.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -511,9 +502,6 @@ $(srcdir)/perf_event_open.gen.test: $(ab
+ $(srcdir)/perf_event_open_nonverbose.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/perf_event_open_unabbrev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pipe2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -523,24 +511,9 @@ $(srcdir)/pkey_alloc.gen.test: $(abs_src
+ $(srcdir)/pkey_free.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pkey_mprotect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll-v.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pread64-pwrite64.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/preadv.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/preadv-pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/preadv2-pwritev2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -556,15 +529,9 @@ $(srcdir)/process_vm_readv.gen.test: $(a
+ $(srcdir)/process_vm_writev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pselect6.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/ptrace.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/quotactl.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -604,9 +571,6 @@ $(srcdir)/recvmmsg-timeout.gen.test: $(a
+ $(srcdir)/recvmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/regex.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/remap_file_pages.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -646,9 +610,6 @@ $(srcdir)/rt_sigtimedwait.gen.test: $(ab
+ $(srcdir)/rt_tgsigqueueinfo.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/sched.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sched_get_priority_mxx.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -769,9 +730,6 @@ $(srcdir)/siginfo.gen.test: $(abs_srcdir
+ $(srcdir)/signal_receive.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/signalfd4.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sigreturn.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -847,30 +805,6 @@ $(srcdir)/times.gen.test: $(abs_srcdir)/
+ $(srcdir)/times-fail.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/trace_fstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_fstatfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_lstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_question.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/truncate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -949,9 +883,6 @@ $(srcdir)/xattr-strings.gen.test: $(abs_
+ $(srcdir)/xet_robust_list.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/xetitimer.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/xetpgid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+diff -rup a/tests/gen_tests.in b/tests/gen_tests.in
+--- a/tests/gen_tests.in	2017-06-19 17:47:03.000000000 -0400
++++ b/tests/gen_tests.in	2017-06-19 17:55:34.844705272 -0400
+@@ -40,7 +40,7 @@ chmod	-a28
+ chown	-a28
+ chown32	-a31
+ chroot	-a24
+-clock	test_trace_expr 'times|fcntl.*' -e/clock
++#clock	test_trace_expr 'times|fcntl.*' -e/clock
+ clock_adjtime	-a37
+ clock_nanosleep	-e trace=clock_nanosleep,clock_gettime
+ clock_xettime	-a36 -e trace=clock_getres,clock_gettime,clock_settime
+@@ -61,7 +61,7 @@ execveat-v	-v -e trace=execveat
+ faccessat	-P $NAME.sample
+ fadvise64_64	+fadvise64.test
+ fallocate	-a18
+-fanotify_init
++#fanotify_init
+ fanotify_mark	-a32
+ fchdir	-a11
+ fchmod	-a15
+@@ -115,7 +115,7 @@ getsockname	-a27
+ gettid	-a9
+ getuid32	+getuid.test
+ getxxid	-a10 -e trace=getxpid,getxuid,getxgid
+-inet-cmsg	-e trace=recvmsg
++#inet-cmsg	-e trace=recvmsg
+ init_module	-a27
+ inotify	-a23 -e trace=inotify_add_watch,inotify_rm_watch
+ inotify_init1	-a27
+@@ -195,24 +195,24 @@ osf_utimes	-a21
+ pause	-a8 -esignal=none
+ perf_event_open	-a1
+ perf_event_open_nonverbose	-a34 -e verbose=none -e trace=perf_event_open
+-perf_event_open_unabbrev	-a1 -v -e trace=perf_event_open
++#perf_event_open_unabbrev	-a1 -v -e trace=perf_event_open
+ pipe2	-a15
+ pkey_alloc	-a17
+ pkey_free	-a13
+-pkey_mprotect	-a37
+-ppoll	-s2
+-ppoll-v	-v -s2 -e trace=ppoll
++#pkey_mprotect	-a37
++#ppoll	-s2
++#ppoll-v	-v -s2 -e trace=ppoll
+ pread64-pwrite64	-a21 -eread=0 -ewrite=1 -e trace=pread64,pwrite64 -P pread64-pwrite64-tmpfile -P /dev/zero -P /dev/null
+-preadv	-a21
+-preadv-pwritev	-a19 -eread=0 -ewrite=1 -e trace=preadv,pwritev
++#preadv	-a21
++#preadv-pwritev	-a19 -eread=0 -ewrite=1 -e trace=preadv,pwritev
+ preadv2-pwritev2	-a22 -eread=0 -ewrite=1 -e trace=preadv2,pwritev2
+ printstr	-e trace=writev
+ prlimit64
+ process_vm_readv	-s5 -a37
+ process_vm_writev	-s5 -a38
+-pselect6
++#pselect6
+ ptrace	-a23 -e signal=none
+-pwritev	-a22 -s7
++#pwritev	-a22 -s7
+ quotactl
+ quotactl-v	-v -e trace=quotactl
+ quotactl-xfs	-e trace=quotactl
+@@ -226,7 +226,7 @@ reboot
+ recvfrom	-a35
+ recvmmsg-timeout	-a25 -e trace=recvmmsg
+ recvmsg	-eread=0 -ewrite=1 -e trace=recvmsg,sendmsg
+-regex	test_trace_expr '' -etrace='/^(.*_)?statv?fs'
++#regex	test_trace_expr '' -etrace='/^(.*_)?statv?fs'
+ remap_file_pages
+ rename	-a35
+ renameat
+@@ -240,7 +240,7 @@ rt_sigreturn	-esignal='!USR1'
+ rt_sigsuspend	-a20 -esignal=none
+ rt_sigtimedwait	-a38
+ rt_tgsigqueueinfo	-esignal=none
+-sched	test_trace_expr times -e/sched
++#sched	test_trace_expr times -e/sched
+ sched_get_priority_mxx	-a33 -e trace=sched_get_priority_min,sched_get_priority_max
+ sched_rr_get_interval	-a31
+ sched_xetaffinity	-a28 -e trace=sched_getaffinity,sched_setaffinity
+@@ -281,7 +281,7 @@ shmxt	-a11 -e trace='/(osf_)?shmat,shmdt
+ shutdown	-a24
+ siginfo	-e trace=none
+ signal_receive	-a16 -e trace=kill
+-signalfd4
++#signalfd4
+ sigreturn	-esignal='!USR1'
+ sigsuspend	-a19 -esignal=none
+ socketcall	-a20
+@@ -307,14 +307,14 @@ timer_xettime	-e trace=timer_create,time
+ timerfd_xettime	-e trace=timerfd_create,timerfd_settime,timerfd_gettime
+ times	-esignal=none
+ times-fail	-a12 -e trace=times
+-trace_fstat	test_trace_expr '' -e%fstat -v -P stat.sample -P /dev/full
+-trace_fstatfs	test_trace_expr '' -e%fstatfs
+-trace_lstat	test_trace_expr '' -e%lstat -v -P stat.sample -P /dev/full
+-trace_question	test_trace_expr '' -e?osf_utimes,?/^pkey_.*
+-trace_stat	test_trace_expr '' -e%stat -v -P stat.sample -P /dev/full
+-trace_stat_like	test_trace_expr '' -e%%stat -v -P stat.sample -P /dev/full
+-trace_statfs	test_trace_expr '' -e%statfs
+-trace_statfs_like	test_trace_expr '' -e%%statfs
++#trace_fstat	test_trace_expr '' -e%fstat -v -P stat.sample -P /dev/full
++#trace_fstatfs	test_trace_expr '' -e%fstatfs
++#trace_lstat	test_trace_expr '' -e%lstat -v -P stat.sample -P /dev/full
++#trace_question	test_trace_expr '' -e?osf_utimes,?/^pkey_.*
++#trace_stat	test_trace_expr '' -e%stat -v -P stat.sample -P /dev/full
++#trace_stat_like	test_trace_expr '' -e%%stat -v -P stat.sample -P /dev/full
++#trace_statfs	test_trace_expr '' -e%statfs
++#trace_statfs_like	test_trace_expr '' -e%%statfs
+ truncate
+ truncate64
+ ugetrlimit	-a28
+@@ -341,7 +341,7 @@ waitpid	-a28
+ xattr	-a22 -e trace=getxattr,fgetxattr,lgetxattr,setxattr,fsetxattr,lsetxattr,listxattr,flistxattr,llistxattr,removexattr,fremovexattr,lremovexattr
+ xattr-strings	-a22 -s 4 -e trace=fsetxattr
+ xet_robust_list	-a24 -e trace=get_robust_list,set_robust_list
+-xetitimer	-a29 -e trace=setitimer,getitimer
++#xetitimer	-a29 -e trace=setitimer,getitimer
+ xetpgid	-a11 -e trace=getpgid,setpgid
+ xetpriority	-a29 -e trace=getpriority,setpriority
+ xettimeofday	-a20 -e trace=gettimeofday,settimeofday
+diff -rup a/tests/pkey_mprotect.gen.test b/tests/pkey_mprotect.gen.test
+--- a/tests/pkey_mprotect.gen.test	2017-05-24 15:55:56.000000000 -0400
++++ b/tests/pkey_mprotect.gen.test	2017-06-19 17:55:34.844705272 -0400
+@@ -1,4 +1,4 @@
+ #!/bin/sh -efu
+-# Generated by ./tests/gen_tests.sh from ./tests/gen_tests.in (pkey_mprotect -a37); do not edit.
++# Generated by tests/gen_tests.sh from tests/gen_tests.in (pkey_mprotect -a37); do not edit.
+ . "${srcdir=.}/init.sh"
+ run_strace_match_diff -a37
+diff -rup a/tests/pselect6.gen.test b/tests/pselect6.gen.test
+--- a/tests/pselect6.gen.test	2017-05-24 15:55:56.000000000 -0400
++++ b/tests/pselect6.gen.test	2017-06-19 17:55:34.845705273 -0400
+@@ -1,4 +1,4 @@
+ #!/bin/sh -efu
+-# Generated by ./tests/gen_tests.sh from ./tests/gen_tests.in (pselect6 ); do not edit.
++# Generated by tests/gen_tests.sh from tests/gen_tests.in (pselect6 ); do not edit.
+ . "${srcdir=.}/init.sh"
+ run_strace_match_diff 
+diff -rup a/tests-m32/Makefile.am b/tests-m32/Makefile.am
+--- a/tests-m32/Makefile.am	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-m32/Makefile.am	2017-06-19 17:55:34.848705276 -0400
+@@ -109,7 +109,6 @@ check_PROGRAMS = $(PURE_EXECUTABLES) \
+ 	prctl-seccomp-filter-v \
+ 	prctl-seccomp-strict \
+ 	print_maxfd \
+-	qual_fault \
+ 	qual_inject-error-signal \
+ 	qual_inject-retval \
+ 	qual_inject-signal \
+@@ -240,7 +239,6 @@ MISC_TESTS = \
+ 	options-syntax.test \
+ 	pc.test \
+ 	qual_fault-syntax.test \
+-	qual_fault.test \
+ 	qual_inject-error-signal.test \
+ 	qual_inject-retval.test \
+ 	qual_inject-signal.test \
+diff -rup a/tests-m32/Makefile.in b/tests-m32/Makefile.in
+--- a/tests-m32/Makefile.in	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-m32/Makefile.in	2017-06-19 17:55:34.854705281 -0400
+@@ -152,15 +152,15 @@ check_PROGRAMS = $(am__EXEEXT_1) answer$
+ 	perf_event_open_nonverbose$(EXEEXT) \
+ 	perf_event_open_unabbrev$(EXEEXT) ppoll-v$(EXEEXT) \
+ 	prctl-seccomp-filter-v$(EXEEXT) prctl-seccomp-strict$(EXEEXT) \
+-	print_maxfd$(EXEEXT) qual_fault$(EXEEXT) \
+-	qual_inject-error-signal$(EXEEXT) qual_inject-retval$(EXEEXT) \
+-	qual_inject-signal$(EXEEXT) qual_signal$(EXEEXT) \
+-	quotactl-v$(EXEEXT) quotactl-xfs-v$(EXEEXT) \
+-	redirect-fds$(EXEEXT) restart_syscall$(EXEEXT) \
+-	scm_rights$(EXEEXT) seccomp-filter-v$(EXEEXT) \
+-	seccomp-strict$(EXEEXT) set_ptracer_any$(EXEEXT) \
+-	signal_receive$(EXEEXT) sleep$(EXEEXT) stack-fcall$(EXEEXT) \
+-	threads-execve$(EXEEXT) unix-pair-send-recv$(EXEEXT) \
++	print_maxfd$(EXEEXT) qual_inject-error-signal$(EXEEXT) \
++	qual_inject-retval$(EXEEXT) qual_inject-signal$(EXEEXT) \
++	qual_signal$(EXEEXT) quotactl-v$(EXEEXT) \
++	quotactl-xfs-v$(EXEEXT) redirect-fds$(EXEEXT) \
++	restart_syscall$(EXEEXT) scm_rights$(EXEEXT) \
++	seccomp-filter-v$(EXEEXT) seccomp-strict$(EXEEXT) \
++	set_ptracer_any$(EXEEXT) signal_receive$(EXEEXT) \
++	sleep$(EXEEXT) stack-fcall$(EXEEXT) threads-execve$(EXEEXT) \
++	unix-pair-send-recv$(EXEEXT) \
+ 	unix-pair-sendto-recvfrom$(EXEEXT) vfork-f$(EXEEXT) \
+ 	wait4-v$(EXEEXT) waitid-v$(EXEEXT)
+ TESTS = $(GEN_TESTS) $(DECODER_TESTS) $(MISC_TESTS) $(am__EXEEXT_2)
+@@ -1278,10 +1278,6 @@ pwritev_SOURCES = pwritev.c
+ pwritev_OBJECTS = pwritev-pwritev.$(OBJEXT)
+ pwritev_LDADD = $(LDADD)
+ pwritev_DEPENDENCIES = libtests.a
+-qual_fault_SOURCES = qual_fault.c
+-qual_fault_OBJECTS = qual_fault.$(OBJEXT)
+-qual_fault_LDADD = $(LDADD)
+-qual_fault_DEPENDENCIES = libtests.a
+ qual_inject_error_signal_SOURCES = qual_inject-error-signal.c
+ qual_inject_error_signal_OBJECTS = qual_inject-error-signal.$(OBJEXT)
+ qual_inject_error_signal_LDADD = $(LDADD)
+@@ -1947,16 +1943,15 @@ SOURCES = $(libtests_a_SOURCES) _newsele
+ 	prctl-tsc.c pread64-pwrite64.c preadv.c preadv-pwritev.c \
+ 	preadv2-pwritev2.c print_maxfd.c printstr.c prlimit64.c \
+ 	process_vm_readv.c process_vm_writev.c pselect6.c ptrace.c \
+-	pwritev.c qual_fault.c qual_inject-error-signal.c \
+-	qual_inject-retval.c qual_inject-signal.c qual_signal.c \
+-	quotactl.c quotactl-v.c quotactl-xfs.c quotactl-xfs-v.c \
+-	read-write.c readahead.c readdir.c readlink.c readlinkat.c \
+-	readv.c reboot.c recvfrom.c recvmmsg-timeout.c recvmsg.c \
+-	redirect-fds.c remap_file_pages.c rename.c renameat.c \
+-	renameat2.c request_key.c restart_syscall.c rmdir.c \
+-	rt_sigpending.c rt_sigprocmask.c rt_sigqueueinfo.c \
+-	rt_sigreturn.c rt_sigsuspend.c rt_sigtimedwait.c \
+-	rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
++	pwritev.c qual_inject-error-signal.c qual_inject-retval.c \
++	qual_inject-signal.c qual_signal.c quotactl.c quotactl-v.c \
++	quotactl-xfs.c quotactl-xfs-v.c read-write.c readahead.c \
++	readdir.c readlink.c readlinkat.c readv.c reboot.c recvfrom.c \
++	recvmmsg-timeout.c recvmsg.c redirect-fds.c remap_file_pages.c \
++	rename.c renameat.c renameat2.c request_key.c \
++	restart_syscall.c rmdir.c rt_sigpending.c rt_sigprocmask.c \
++	rt_sigqueueinfo.c rt_sigreturn.c rt_sigsuspend.c \
++	rt_sigtimedwait.c rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
+ 	sched_rr_get_interval.c sched_xetaffinity.c sched_xetattr.c \
+ 	sched_xetparam.c sched_xetscheduler.c sched_yield.c \
+ 	scm_rights.c seccomp-filter.c seccomp-filter-v.c \
+@@ -2034,16 +2029,15 @@ DIST_SOURCES = $(libtests_a_SOURCES) _ne
+ 	prctl-tsc.c pread64-pwrite64.c preadv.c preadv-pwritev.c \
+ 	preadv2-pwritev2.c print_maxfd.c printstr.c prlimit64.c \
+ 	process_vm_readv.c process_vm_writev.c pselect6.c ptrace.c \
+-	pwritev.c qual_fault.c qual_inject-error-signal.c \
+-	qual_inject-retval.c qual_inject-signal.c qual_signal.c \
+-	quotactl.c quotactl-v.c quotactl-xfs.c quotactl-xfs-v.c \
+-	read-write.c readahead.c readdir.c readlink.c readlinkat.c \
+-	readv.c reboot.c recvfrom.c recvmmsg-timeout.c recvmsg.c \
+-	redirect-fds.c remap_file_pages.c rename.c renameat.c \
+-	renameat2.c request_key.c restart_syscall.c rmdir.c \
+-	rt_sigpending.c rt_sigprocmask.c rt_sigqueueinfo.c \
+-	rt_sigreturn.c rt_sigsuspend.c rt_sigtimedwait.c \
+-	rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
++	pwritev.c qual_inject-error-signal.c qual_inject-retval.c \
++	qual_inject-signal.c qual_signal.c quotactl.c quotactl-v.c \
++	quotactl-xfs.c quotactl-xfs-v.c read-write.c readahead.c \
++	readdir.c readlink.c readlinkat.c readv.c reboot.c recvfrom.c \
++	recvmmsg-timeout.c recvmsg.c redirect-fds.c remap_file_pages.c \
++	rename.c renameat.c renameat2.c request_key.c \
++	restart_syscall.c rmdir.c rt_sigpending.c rt_sigprocmask.c \
++	rt_sigqueueinfo.c rt_sigreturn.c rt_sigsuspend.c \
++	rt_sigtimedwait.c rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
+ 	sched_rr_get_interval.c sched_xetaffinity.c sched_xetattr.c \
+ 	sched_xetparam.c sched_xetscheduler.c sched_yield.c \
+ 	scm_rights.c seccomp-filter.c seccomp-filter-v.c \
+@@ -2845,32 +2839,31 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	access.gen.test acct.gen.test add_key.gen.test \
+ 	adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test \
+ 	btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test \
+-	chroot.gen.test clock.gen.test clock_adjtime.gen.test \
++	chroot.gen.test clock_adjtime.gen.test \
+ 	clock_nanosleep.gen.test clock_xettime.gen.test \
+ 	copy_file_range.gen.test creat.gen.test delete_module.gen.test \
+ 	dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test \
+ 	epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test \
+ 	epoll_wait.gen.test erestartsys.gen.test execveat.gen.test \
+ 	execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test \
+-	fallocate.gen.test fanotify_init.gen.test \
+-	fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test \
+-	fchmodat.gen.test fchown.gen.test fchown32.gen.test \
+-	fchownat.gen.test fcntl.gen.test fcntl64.gen.test \
+-	fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test \
+-	finit_module.gen.test flock.gen.test fork-f.gen.test \
+-	fstat.gen.test fstat64.gen.test fstatat64.gen.test \
+-	fstatfs.gen.test fstatfs64.gen.test fsync.gen.test \
+-	ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test \
+-	get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test \
+-	getdents.gen.test getdents64.gen.test getegid.gen.test \
+-	getegid32.gen.test geteuid.gen.test geteuid32.gen.test \
+-	getgid.gen.test getgid32.gen.test getgroups.gen.test \
+-	getgroups32.gen.test getpeername.gen.test getpgrp.gen.test \
+-	getpid.gen.test getppid.gen.test getrandom.gen.test \
+-	getresgid.gen.test getresgid32.gen.test getresuid.gen.test \
+-	getresuid32.gen.test getrlimit.gen.test getrusage.gen.test \
+-	getsid.gen.test getsockname.gen.test gettid.gen.test \
+-	getuid32.gen.test getxxid.gen.test inet-cmsg.gen.test \
++	fallocate.gen.test fanotify_mark.gen.test fchdir.gen.test \
++	fchmod.gen.test fchmodat.gen.test fchown.gen.test \
++	fchown32.gen.test fchownat.gen.test fcntl.gen.test \
++	fcntl64.gen.test fdatasync.gen.test file_handle.gen.test \
++	file_ioctl.gen.test finit_module.gen.test flock.gen.test \
++	fork-f.gen.test fstat.gen.test fstat64.gen.test \
++	fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test \
++	fsync.gen.test ftruncate.gen.test ftruncate64.gen.test \
++	futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test \
++	getcwd.gen.test getdents.gen.test getdents64.gen.test \
++	getegid.gen.test getegid32.gen.test geteuid.gen.test \
++	geteuid32.gen.test getgid.gen.test getgid32.gen.test \
++	getgroups.gen.test getgroups32.gen.test getpeername.gen.test \
++	getpgrp.gen.test getpid.gen.test getppid.gen.test \
++	getrandom.gen.test getresgid.gen.test getresgid32.gen.test \
++	getresuid.gen.test getresuid32.gen.test getrlimit.gen.test \
++	getrusage.gen.test getsid.gen.test getsockname.gen.test \
++	gettid.gen.test getuid32.gen.test getxxid.gen.test \
+ 	init_module.gen.test inotify.gen.test inotify_init1.gen.test \
+ 	int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test \
+ 	ioctl_evdev-v.gen.test ioctl_loop.gen.test \
+@@ -2900,24 +2893,20 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	oldlstat.gen.test oldstat.gen.test open.gen.test \
+ 	openat.gen.test osf_utimes.gen.test pause.gen.test \
+ 	perf_event_open.gen.test perf_event_open_nonverbose.gen.test \
+-	perf_event_open_unabbrev.gen.test pipe2.gen.test \
+-	pkey_alloc.gen.test pkey_free.gen.test pkey_mprotect.gen.test \
+-	ppoll.gen.test ppoll-v.gen.test pread64-pwrite64.gen.test \
+-	preadv.gen.test preadv-pwritev.gen.test \
+-	preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test \
+-	process_vm_readv.gen.test process_vm_writev.gen.test \
+-	pselect6.gen.test ptrace.gen.test pwritev.gen.test \
+-	quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test \
++	pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test \
++	pread64-pwrite64.gen.test preadv2-pwritev2.gen.test \
++	printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test \
++	process_vm_writev.gen.test ptrace.gen.test quotactl.gen.test \
++	quotactl-v.gen.test quotactl-xfs.gen.test \
+ 	quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test \
+ 	readdir.gen.test readlink.gen.test readlinkat.gen.test \
+ 	reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test \
+-	recvmsg.gen.test regex.gen.test remap_file_pages.gen.test \
+-	rename.gen.test renameat.gen.test renameat2.gen.test \
+-	request_key.gen.test rmdir.gen.test rt_sigpending.gen.test \
+-	rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test \
+-	rt_sigreturn.gen.test rt_sigsuspend.gen.test \
+-	rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test \
+-	sched.gen.test sched_get_priority_mxx.gen.test \
++	recvmsg.gen.test remap_file_pages.gen.test rename.gen.test \
++	renameat.gen.test renameat2.gen.test request_key.gen.test \
++	rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test \
++	rt_sigqueueinfo.gen.test rt_sigreturn.gen.test \
++	rt_sigsuspend.gen.test rt_sigtimedwait.gen.test \
++	rt_tgsigqueueinfo.gen.test sched_get_priority_mxx.gen.test \
+ 	sched_rr_get_interval.gen.test sched_xetaffinity.gen.test \
+ 	sched_xetattr.gen.test sched_xetparam.gen.test \
+ 	sched_xetscheduler.gen.test sched_yield.gen.test \
+@@ -2932,31 +2921,25 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	setresuid.gen.test setresuid32.gen.test setreuid.gen.test \
+ 	setreuid32.gen.test setrlimit.gen.test setuid.gen.test \
+ 	setuid32.gen.test shmxt.gen.test shutdown.gen.test \
+-	siginfo.gen.test signal_receive.gen.test signalfd4.gen.test \
+-	sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test \
+-	splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test \
++	siginfo.gen.test signal_receive.gen.test sigreturn.gen.test \
++	sigsuspend.gen.test socketcall.gen.test splice.gen.test \
++	stat.gen.test stat64.gen.test statfs.gen.test \
+ 	statfs64.gen.test statx.gen.test swap.gen.test \
+ 	sxetmask.gen.test symlink.gen.test symlinkat.gen.test \
+ 	sync.gen.test sync_file_range.gen.test \
+ 	sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test \
+ 	tee.gen.test time.gen.test timer_create.gen.test \
+ 	timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test \
+-	times-fail.gen.test trace_fstat.gen.test \
+-	trace_fstatfs.gen.test trace_lstat.gen.test \
+-	trace_question.gen.test trace_stat.gen.test \
+-	trace_stat_like.gen.test trace_statfs.gen.test \
+-	trace_statfs_like.gen.test truncate.gen.test \
+-	truncate64.gen.test ugetrlimit.gen.test umask.gen.test \
+-	umoven-illptr.gen.test umovestr-illptr.gen.test \
+-	umovestr3.gen.test unlink.gen.test unlinkat.gen.test \
+-	unshare.gen.test userfaultfd.gen.test ustat.gen.test \
+-	utime.gen.test utimensat.gen.test utimes.gen.test \
+-	vfork-f.gen.test vhangup.gen.test vmsplice.gen.test \
+-	wait4.gen.test wait4-v.gen.test waitid.gen.test \
+-	waitid-v.gen.test waitpid.gen.test xattr.gen.test \
+-	xattr-strings.gen.test xet_robust_list.gen.test \
+-	xetitimer.gen.test xetpgid.gen.test xetpriority.gen.test \
+-	xettimeofday.gen.test
++	times-fail.gen.test truncate.gen.test truncate64.gen.test \
++	ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test \
++	umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test \
++	unlinkat.gen.test unshare.gen.test userfaultfd.gen.test \
++	ustat.gen.test utime.gen.test utimensat.gen.test \
++	utimes.gen.test vfork-f.gen.test vhangup.gen.test \
++	vmsplice.gen.test wait4.gen.test wait4-v.gen.test \
++	waitid.gen.test waitid-v.gen.test waitpid.gen.test \
++	xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test \
++	xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
+ @USE_LIBUNWIND_FALSE@LIBUNWIND_TESTS = 
+ @USE_LIBUNWIND_TRUE@LIBUNWIND_TESTS = strace-k.test
+ DECODER_TESTS = \
+@@ -3034,7 +3017,6 @@ MISC_TESTS = \
+ 	options-syntax.test \
+ 	pc.test \
+ 	qual_fault-syntax.test \
+-	qual_fault.test \
+ 	qual_inject-error-signal.test \
+ 	qual_inject-retval.test \
+ 	qual_inject-signal.test \
+@@ -4156,10 +4138,6 @@ pwritev$(EXEEXT): $(pwritev_OBJECTS) $(p
+ 	@rm -f pwritev$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(pwritev_OBJECTS) $(pwritev_LDADD) $(LIBS)
+ 
+-qual_fault$(EXEEXT): $(qual_fault_OBJECTS) $(qual_fault_DEPENDENCIES) $(EXTRA_qual_fault_DEPENDENCIES) 
+-	@rm -f qual_fault$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(qual_fault_OBJECTS) $(qual_fault_LDADD) $(LIBS)
+-
+ qual_inject-error-signal$(EXEEXT): $(qual_inject_error_signal_OBJECTS) $(qual_inject_error_signal_DEPENDENCIES) $(EXTRA_qual_inject_error_signal_DEPENDENCIES) 
+ 	@rm -f qual_inject-error-signal$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(qual_inject_error_signal_OBJECTS) $(qual_inject_error_signal_LDADD) $(LIBS)
+@@ -5007,7 +4985,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pselect6.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptrace.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pwritev-pwritev.Po@am__quote@
+-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_fault.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-error-signal.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-retval.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-signal.Po@am__quote@
+@@ -6078,9 +6055,6 @@ $(srcdir)/chown32.gen.test: $(abs_srcdir
+ $(srcdir)/chroot.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/clock.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/clock_adjtime.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6141,9 +6115,6 @@ $(srcdir)/fadvise64_64.gen.test: $(abs_s
+ $(srcdir)/fallocate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/fanotify_init.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/fanotify_mark.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6303,9 +6274,6 @@ $(srcdir)/getuid32.gen.test: $(abs_srcdi
+ $(srcdir)/getxxid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/inet-cmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/init_module.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6546,9 +6514,6 @@ $(srcdir)/perf_event_open.gen.test: $(ab
+ $(srcdir)/perf_event_open_nonverbose.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/perf_event_open_unabbrev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pipe2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6558,24 +6523,9 @@ $(srcdir)/pkey_alloc.gen.test: $(abs_src
+ $(srcdir)/pkey_free.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pkey_mprotect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll-v.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pread64-pwrite64.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/preadv.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/preadv-pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/preadv2-pwritev2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6591,15 +6541,9 @@ $(srcdir)/process_vm_readv.gen.test: $(a
+ $(srcdir)/process_vm_writev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pselect6.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/ptrace.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/quotactl.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6639,9 +6583,6 @@ $(srcdir)/recvmmsg-timeout.gen.test: $(a
+ $(srcdir)/recvmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/regex.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/remap_file_pages.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6681,9 +6622,6 @@ $(srcdir)/rt_sigtimedwait.gen.test: $(ab
+ $(srcdir)/rt_tgsigqueueinfo.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/sched.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sched_get_priority_mxx.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6804,9 +6742,6 @@ $(srcdir)/siginfo.gen.test: $(abs_srcdir
+ $(srcdir)/signal_receive.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/signalfd4.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sigreturn.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6882,30 +6817,6 @@ $(srcdir)/times.gen.test: $(abs_srcdir)/
+ $(srcdir)/times-fail.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/trace_fstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_fstatfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_lstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_question.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/truncate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6984,9 +6895,6 @@ $(srcdir)/xattr-strings.gen.test: $(abs_
+ $(srcdir)/xet_robust_list.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/xetitimer.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/xetpgid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+diff -rup a/tests-m32/gen_tests.am b/tests-m32/gen_tests.am
+--- a/tests-m32/gen_tests.am	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-m32/gen_tests.am	2017-06-19 17:55:52.226721927 -0400
+@@ -1,5 +1,5 @@
+ # Generated by ./tests/gen_tests.sh from ./tests/gen_tests.in; do not edit.
+-GEN_TESTS = _newselect.gen.test accept.gen.test accept4.gen.test access.gen.test acct.gen.test add_key.gen.test adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test chroot.gen.test clock.gen.test clock_adjtime.gen.test clock_nanosleep.gen.test clock_xettime.gen.test copy_file_range.gen.test creat.gen.test delete_module.gen.test dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test epoll_wait.gen.test erestartsys.gen.test execveat.gen.test execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test fallocate.gen.test fanotify_init.gen.test fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test fchmodat.gen.test fchown.gen.test fchown32.gen.test fchownat.gen.test fcntl.gen.test fcntl64.gen.test fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test finit_module.gen.test flock.gen.test fork-f.gen.test fstat.gen.test fstat64.gen.test fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test fsync.gen.test ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test getdents.gen.test getdents64.gen.test getegid.gen.test getegid32.gen.test geteuid.gen.test geteuid32.gen.test getgid.gen.test getgid32.gen.test getgroups.gen.test getgroups32.gen.test getpeername.gen.test getpgrp.gen.test getpid.gen.test getppid.gen.test getrandom.gen.test getresgid.gen.test getresgid32.gen.test getresuid.gen.test getresuid32.gen.test getrlimit.gen.test getrusage.gen.test getsid.gen.test getsockname.gen.test gettid.gen.test getuid32.gen.test getxxid.gen.test inet-cmsg.gen.test init_module.gen.test inotify.gen.test inotify_init1.gen.test int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test ioctl_evdev-v.gen.test ioctl_loop.gen.test ioctl_loop-v.gen.test ioctl_mtd.gen.test ioctl_rtc.gen.test ioctl_rtc-v.gen.test ioctl_scsi.gen.test ioctl_sg_io_v3.gen.test ioctl_sg_io_v4.gen.test ioctl_uffdio.gen.test ioctl_v4l2.gen.test ioperm.gen.test iopl.gen.test ioprio.gen.test ip_mreq.gen.test ipc.gen.test ipc_msg.gen.test ipc_sem.gen.test ipc_shm.gen.test kcmp.gen.test kexec_file_load.gen.test kexec_load.gen.test keyctl.gen.test kill.gen.test lchown.gen.test lchown32.gen.test link.gen.test linkat.gen.test lookup_dcookie.gen.test lstat.gen.test lstat64.gen.test madvise.gen.test mbind.gen.test membarrier.gen.test memfd_create.gen.test migrate_pages.gen.test mincore.gen.test mkdir.gen.test mkdirat.gen.test mknod.gen.test mknodat.gen.test mlock.gen.test mlock2.gen.test mlockall.gen.test mmap64.gen.test mmsg.gen.test mmsg-silent.gen.test mmsg_name.gen.test mmsg_name-v.gen.test mount.gen.test move_pages.gen.test mq.gen.test mq_sendrecv.gen.test mq_sendrecv-read.gen.test mq_sendrecv-write.gen.test msg_control.gen.test msg_control-v.gen.test msg_name.gen.test munlockall.gen.test nanosleep.gen.test net-sockaddr.gen.test netlink_protocol.gen.test newfstatat.gen.test old_mmap.gen.test oldfstat.gen.test oldlstat.gen.test oldstat.gen.test open.gen.test openat.gen.test osf_utimes.gen.test pause.gen.test perf_event_open.gen.test perf_event_open_nonverbose.gen.test perf_event_open_unabbrev.gen.test pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test pkey_mprotect.gen.test ppoll.gen.test ppoll-v.gen.test pread64-pwrite64.gen.test preadv.gen.test preadv-pwritev.gen.test preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test process_vm_writev.gen.test pselect6.gen.test ptrace.gen.test pwritev.gen.test quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test readdir.gen.test readlink.gen.test readlinkat.gen.test reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test recvmsg.gen.test regex.gen.test remap_file_pages.gen.test rename.gen.test renameat.gen.test renameat2.gen.test request_key.gen.test rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test rt_sigreturn.gen.test rt_sigsuspend.gen.test rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test sched.gen.test sched_get_priority_mxx.gen.test sched_rr_get_interval.gen.test sched_xetaffinity.gen.test sched_xetattr.gen.test sched_xetparam.gen.test sched_xetscheduler.gen.test sched_yield.gen.test seccomp-filter.gen.test seccomp-filter-v.gen.test select.gen.test semop.gen.test sendfile.gen.test sendfile64.gen.test set_mempolicy.gen.test setdomainname.gen.test setfsgid.gen.test setfsgid32.gen.test setfsuid.gen.test setfsuid32.gen.test setgid.gen.test setgid32.gen.test setgroups.gen.test setgroups32.gen.test sethostname.gen.test setns.gen.test setregid.gen.test setregid32.gen.test setresgid.gen.test setresgid32.gen.test setresuid.gen.test setresuid32.gen.test setreuid.gen.test setreuid32.gen.test setrlimit.gen.test setuid.gen.test setuid32.gen.test shmxt.gen.test shutdown.gen.test siginfo.gen.test signal_receive.gen.test signalfd4.gen.test sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test statfs64.gen.test statx.gen.test swap.gen.test sxetmask.gen.test symlink.gen.test symlinkat.gen.test sync.gen.test sync_file_range.gen.test sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test tee.gen.test time.gen.test timer_create.gen.test timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test times-fail.gen.test trace_fstat.gen.test trace_fstatfs.gen.test trace_lstat.gen.test trace_question.gen.test trace_stat.gen.test trace_stat_like.gen.test trace_statfs.gen.test trace_statfs_like.gen.test truncate.gen.test truncate64.gen.test ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test unlinkat.gen.test unshare.gen.test userfaultfd.gen.test ustat.gen.test utime.gen.test utimensat.gen.test utimes.gen.test vfork-f.gen.test vhangup.gen.test vmsplice.gen.test wait4.gen.test wait4-v.gen.test waitid.gen.test waitid-v.gen.test waitpid.gen.test xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test xetitimer.gen.test xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
++GEN_TESTS = _newselect.gen.test accept.gen.test accept4.gen.test access.gen.test acct.gen.test add_key.gen.test adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test chroot.gen.test clock_adjtime.gen.test clock_nanosleep.gen.test clock_xettime.gen.test copy_file_range.gen.test creat.gen.test delete_module.gen.test dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test epoll_wait.gen.test erestartsys.gen.test execveat.gen.test execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test fallocate.gen.test fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test fchmodat.gen.test fchown.gen.test fchown32.gen.test fchownat.gen.test fcntl.gen.test fcntl64.gen.test fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test finit_module.gen.test flock.gen.test fork-f.gen.test fstat.gen.test fstat64.gen.test fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test fsync.gen.test ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test getdents.gen.test getdents64.gen.test getegid.gen.test getegid32.gen.test geteuid.gen.test geteuid32.gen.test getgid.gen.test getgid32.gen.test getgroups.gen.test getgroups32.gen.test getpeername.gen.test getpgrp.gen.test getpid.gen.test getppid.gen.test getrandom.gen.test getresgid.gen.test getresgid32.gen.test getresuid.gen.test getresuid32.gen.test getrlimit.gen.test getrusage.gen.test getsid.gen.test getsockname.gen.test gettid.gen.test getuid32.gen.test getxxid.gen.test init_module.gen.test inotify.gen.test inotify_init1.gen.test int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test ioctl_evdev-v.gen.test ioctl_loop.gen.test ioctl_loop-v.gen.test ioctl_mtd.gen.test ioctl_rtc.gen.test ioctl_rtc-v.gen.test ioctl_scsi.gen.test ioctl_sg_io_v3.gen.test ioctl_sg_io_v4.gen.test ioctl_uffdio.gen.test ioctl_v4l2.gen.test ioperm.gen.test iopl.gen.test ioprio.gen.test ip_mreq.gen.test ipc.gen.test ipc_msg.gen.test ipc_sem.gen.test ipc_shm.gen.test kcmp.gen.test kexec_file_load.gen.test kexec_load.gen.test keyctl.gen.test kill.gen.test lchown.gen.test lchown32.gen.test link.gen.test linkat.gen.test lookup_dcookie.gen.test lstat.gen.test lstat64.gen.test madvise.gen.test mbind.gen.test membarrier.gen.test memfd_create.gen.test migrate_pages.gen.test mincore.gen.test mkdir.gen.test mkdirat.gen.test mknod.gen.test mknodat.gen.test mlock.gen.test mlock2.gen.test mlockall.gen.test mmap64.gen.test mmsg.gen.test mmsg-silent.gen.test mmsg_name.gen.test mmsg_name-v.gen.test mount.gen.test move_pages.gen.test mq.gen.test mq_sendrecv.gen.test mq_sendrecv-read.gen.test mq_sendrecv-write.gen.test msg_control.gen.test msg_control-v.gen.test msg_name.gen.test munlockall.gen.test nanosleep.gen.test net-sockaddr.gen.test netlink_protocol.gen.test newfstatat.gen.test old_mmap.gen.test oldfstat.gen.test oldlstat.gen.test oldstat.gen.test open.gen.test openat.gen.test osf_utimes.gen.test pause.gen.test perf_event_open.gen.test perf_event_open_nonverbose.gen.test pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test pread64-pwrite64.gen.test preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test process_vm_writev.gen.test ptrace.gen.test quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test readdir.gen.test readlink.gen.test readlinkat.gen.test reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test recvmsg.gen.test remap_file_pages.gen.test rename.gen.test renameat.gen.test renameat2.gen.test request_key.gen.test rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test rt_sigreturn.gen.test rt_sigsuspend.gen.test rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test sched_get_priority_mxx.gen.test sched_rr_get_interval.gen.test sched_xetaffinity.gen.test sched_xetattr.gen.test sched_xetparam.gen.test sched_xetscheduler.gen.test sched_yield.gen.test seccomp-filter.gen.test seccomp-filter-v.gen.test select.gen.test semop.gen.test sendfile.gen.test sendfile64.gen.test set_mempolicy.gen.test setdomainname.gen.test setfsgid.gen.test setfsgid32.gen.test setfsuid.gen.test setfsuid32.gen.test setgid.gen.test setgid32.gen.test setgroups.gen.test setgroups32.gen.test sethostname.gen.test setns.gen.test setregid.gen.test setregid32.gen.test setresgid.gen.test setresgid32.gen.test setresuid.gen.test setresuid32.gen.test setreuid.gen.test setreuid32.gen.test setrlimit.gen.test setuid.gen.test setuid32.gen.test shmxt.gen.test shutdown.gen.test siginfo.gen.test signal_receive.gen.test sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test statfs64.gen.test statx.gen.test swap.gen.test sxetmask.gen.test symlink.gen.test symlinkat.gen.test sync.gen.test sync_file_range.gen.test sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test tee.gen.test time.gen.test timer_create.gen.test timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test times-fail.gen.test truncate.gen.test truncate64.gen.test ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test unlinkat.gen.test unshare.gen.test userfaultfd.gen.test ustat.gen.test utime.gen.test utimensat.gen.test utimes.gen.test vfork-f.gen.test vhangup.gen.test vmsplice.gen.test wait4.gen.test wait4-v.gen.test waitid.gen.test waitid-v.gen.test waitpid.gen.test xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
+ 
+ $(srcdir)/_newselect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+@@ -46,9 +46,6 @@ $(srcdir)/chown32.gen.test: $(abs_srcdir
+ $(srcdir)/chroot.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/clock.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/clock_adjtime.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -109,9 +106,6 @@ $(srcdir)/fadvise64_64.gen.test: $(abs_s
+ $(srcdir)/fallocate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/fanotify_init.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/fanotify_mark.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -271,9 +265,6 @@ $(srcdir)/getuid32.gen.test: $(abs_srcdi
+ $(srcdir)/getxxid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/inet-cmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/init_module.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -511,9 +502,6 @@ $(srcdir)/perf_event_open.gen.test: $(ab
+ $(srcdir)/perf_event_open_nonverbose.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/perf_event_open_unabbrev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pipe2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -523,24 +511,9 @@ $(srcdir)/pkey_alloc.gen.test: $(abs_src
+ $(srcdir)/pkey_free.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pkey_mprotect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll-v.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pread64-pwrite64.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/preadv.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/preadv-pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/preadv2-pwritev2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -556,15 +529,9 @@ $(srcdir)/process_vm_readv.gen.test: $(a
+ $(srcdir)/process_vm_writev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pselect6.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/ptrace.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/quotactl.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -604,9 +571,6 @@ $(srcdir)/recvmmsg-timeout.gen.test: $(a
+ $(srcdir)/recvmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/regex.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/remap_file_pages.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -646,9 +610,6 @@ $(srcdir)/rt_sigtimedwait.gen.test: $(ab
+ $(srcdir)/rt_tgsigqueueinfo.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/sched.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sched_get_priority_mxx.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -769,9 +730,6 @@ $(srcdir)/siginfo.gen.test: $(abs_srcdir
+ $(srcdir)/signal_receive.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/signalfd4.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sigreturn.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -847,30 +805,6 @@ $(srcdir)/times.gen.test: $(abs_srcdir)/
+ $(srcdir)/times-fail.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/trace_fstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_fstatfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_lstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_question.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/truncate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -949,9 +883,6 @@ $(srcdir)/xattr-strings.gen.test: $(abs_
+ $(srcdir)/xet_robust_list.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/xetitimer.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/xetpgid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+diff -rup a/tests-m32/gen_tests.in b/tests-m32/gen_tests.in
+--- a/tests-m32/gen_tests.in	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-m32/gen_tests.in	2017-06-19 17:55:52.207721909 -0400
+@@ -40,7 +40,7 @@ chmod	-a28
+ chown	-a28
+ chown32	-a31
+ chroot	-a24
+-clock	test_trace_expr 'times|fcntl.*' -e/clock
++#clock	test_trace_expr 'times|fcntl.*' -e/clock
+ clock_adjtime	-a37
+ clock_nanosleep	-e trace=clock_nanosleep,clock_gettime
+ clock_xettime	-a36 -e trace=clock_getres,clock_gettime,clock_settime
+@@ -61,7 +61,7 @@ execveat-v	-v -e trace=execveat
+ faccessat	-P $NAME.sample
+ fadvise64_64	+fadvise64.test
+ fallocate	-a18
+-fanotify_init
++#fanotify_init
+ fanotify_mark	-a32
+ fchdir	-a11
+ fchmod	-a15
+@@ -115,7 +115,7 @@ getsockname	-a27
+ gettid	-a9
+ getuid32	+getuid.test
+ getxxid	-a10 -e trace=getxpid,getxuid,getxgid
+-inet-cmsg	-e trace=recvmsg
++#inet-cmsg	-e trace=recvmsg
+ init_module	-a27
+ inotify	-a23 -e trace=inotify_add_watch,inotify_rm_watch
+ inotify_init1	-a27
+@@ -195,24 +195,24 @@ osf_utimes	-a21
+ pause	-a8 -esignal=none
+ perf_event_open	-a1
+ perf_event_open_nonverbose	-a34 -e verbose=none -e trace=perf_event_open
+-perf_event_open_unabbrev	-a1 -v -e trace=perf_event_open
++#perf_event_open_unabbrev	-a1 -v -e trace=perf_event_open
+ pipe2	-a15
+ pkey_alloc	-a17
+ pkey_free	-a13
+-pkey_mprotect	-a37
+-ppoll	-s2
+-ppoll-v	-v -s2 -e trace=ppoll
++#pkey_mprotect	-a37
++#ppoll	-s2
++#ppoll-v	-v -s2 -e trace=ppoll
+ pread64-pwrite64	-a21 -eread=0 -ewrite=1 -e trace=pread64,pwrite64 -P pread64-pwrite64-tmpfile -P /dev/zero -P /dev/null
+-preadv	-a21
+-preadv-pwritev	-a19 -eread=0 -ewrite=1 -e trace=preadv,pwritev
++#preadv	-a21
++#preadv-pwritev	-a19 -eread=0 -ewrite=1 -e trace=preadv,pwritev
+ preadv2-pwritev2	-a22 -eread=0 -ewrite=1 -e trace=preadv2,pwritev2
+ printstr	-e trace=writev
+ prlimit64
+ process_vm_readv	-s5 -a37
+ process_vm_writev	-s5 -a38
+-pselect6
++#pselect6
+ ptrace	-a23 -e signal=none
+-pwritev	-a22 -s7
++#pwritev	-a22 -s7
+ quotactl
+ quotactl-v	-v -e trace=quotactl
+ quotactl-xfs	-e trace=quotactl
+@@ -226,7 +226,7 @@ reboot
+ recvfrom	-a35
+ recvmmsg-timeout	-a25 -e trace=recvmmsg
+ recvmsg	-eread=0 -ewrite=1 -e trace=recvmsg,sendmsg
+-regex	test_trace_expr '' -etrace='/^(.*_)?statv?fs'
++#regex	test_trace_expr '' -etrace='/^(.*_)?statv?fs'
+ remap_file_pages
+ rename	-a35
+ renameat
+@@ -240,7 +240,7 @@ rt_sigreturn	-esignal='!USR1'
+ rt_sigsuspend	-a20 -esignal=none
+ rt_sigtimedwait	-a38
+ rt_tgsigqueueinfo	-esignal=none
+-sched	test_trace_expr times -e/sched
++#sched	test_trace_expr times -e/sched
+ sched_get_priority_mxx	-a33 -e trace=sched_get_priority_min,sched_get_priority_max
+ sched_rr_get_interval	-a31
+ sched_xetaffinity	-a28 -e trace=sched_getaffinity,sched_setaffinity
+@@ -281,7 +281,7 @@ shmxt	-a11 -e trace='/(osf_)?shmat,shmdt
+ shutdown	-a24
+ siginfo	-e trace=none
+ signal_receive	-a16 -e trace=kill
+-signalfd4
++#signalfd4
+ sigreturn	-esignal='!USR1'
+ sigsuspend	-a19 -esignal=none
+ socketcall	-a20
+@@ -307,14 +307,14 @@ timer_xettime	-e trace=timer_create,time
+ timerfd_xettime	-e trace=timerfd_create,timerfd_settime,timerfd_gettime
+ times	-esignal=none
+ times-fail	-a12 -e trace=times
+-trace_fstat	test_trace_expr '' -e%fstat -v -P stat.sample -P /dev/full
+-trace_fstatfs	test_trace_expr '' -e%fstatfs
+-trace_lstat	test_trace_expr '' -e%lstat -v -P stat.sample -P /dev/full
+-trace_question	test_trace_expr '' -e?osf_utimes,?/^pkey_.*
+-trace_stat	test_trace_expr '' -e%stat -v -P stat.sample -P /dev/full
+-trace_stat_like	test_trace_expr '' -e%%stat -v -P stat.sample -P /dev/full
+-trace_statfs	test_trace_expr '' -e%statfs
+-trace_statfs_like	test_trace_expr '' -e%%statfs
++#trace_fstat	test_trace_expr '' -e%fstat -v -P stat.sample -P /dev/full
++#trace_fstatfs	test_trace_expr '' -e%fstatfs
++#trace_lstat	test_trace_expr '' -e%lstat -v -P stat.sample -P /dev/full
++#trace_question	test_trace_expr '' -e?osf_utimes,?/^pkey_.*
++#trace_stat	test_trace_expr '' -e%stat -v -P stat.sample -P /dev/full
++#trace_stat_like	test_trace_expr '' -e%%stat -v -P stat.sample -P /dev/full
++#trace_statfs	test_trace_expr '' -e%statfs
++#trace_statfs_like	test_trace_expr '' -e%%statfs
+ truncate
+ truncate64
+ ugetrlimit	-a28
+@@ -341,7 +341,7 @@ waitpid	-a28
+ xattr	-a22 -e trace=getxattr,fgetxattr,lgetxattr,setxattr,fsetxattr,lsetxattr,listxattr,flistxattr,llistxattr,removexattr,fremovexattr,lremovexattr
+ xattr-strings	-a22 -s 4 -e trace=fsetxattr
+ xet_robust_list	-a24 -e trace=get_robust_list,set_robust_list
+-xetitimer	-a29 -e trace=setitimer,getitimer
++#xetitimer	-a29 -e trace=setitimer,getitimer
+ xetpgid	-a11 -e trace=getpgid,setpgid
+ xetpriority	-a29 -e trace=getpriority,setpriority
+ xettimeofday	-a20 -e trace=gettimeofday,settimeofday
+diff -rup a/tests-mx32/Makefile.am b/tests-mx32/Makefile.am
+--- a/tests-mx32/Makefile.am	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-mx32/Makefile.am	2017-06-19 17:55:34.870705297 -0400
+@@ -109,7 +109,6 @@ check_PROGRAMS = $(PURE_EXECUTABLES) \
+ 	prctl-seccomp-filter-v \
+ 	prctl-seccomp-strict \
+ 	print_maxfd \
+-	qual_fault \
+ 	qual_inject-error-signal \
+ 	qual_inject-retval \
+ 	qual_inject-signal \
+@@ -240,7 +239,6 @@ MISC_TESTS = \
+ 	options-syntax.test \
+ 	pc.test \
+ 	qual_fault-syntax.test \
+-	qual_fault.test \
+ 	qual_inject-error-signal.test \
+ 	qual_inject-retval.test \
+ 	qual_inject-signal.test \
+diff -rup a/tests-mx32/Makefile.in b/tests-mx32/Makefile.in
+--- a/tests-mx32/Makefile.in	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-mx32/Makefile.in	2017-06-19 17:55:34.875705301 -0400
+@@ -152,15 +152,15 @@ check_PROGRAMS = $(am__EXEEXT_1) answer$
+ 	perf_event_open_nonverbose$(EXEEXT) \
+ 	perf_event_open_unabbrev$(EXEEXT) ppoll-v$(EXEEXT) \
+ 	prctl-seccomp-filter-v$(EXEEXT) prctl-seccomp-strict$(EXEEXT) \
+-	print_maxfd$(EXEEXT) qual_fault$(EXEEXT) \
+-	qual_inject-error-signal$(EXEEXT) qual_inject-retval$(EXEEXT) \
+-	qual_inject-signal$(EXEEXT) qual_signal$(EXEEXT) \
+-	quotactl-v$(EXEEXT) quotactl-xfs-v$(EXEEXT) \
+-	redirect-fds$(EXEEXT) restart_syscall$(EXEEXT) \
+-	scm_rights$(EXEEXT) seccomp-filter-v$(EXEEXT) \
+-	seccomp-strict$(EXEEXT) set_ptracer_any$(EXEEXT) \
+-	signal_receive$(EXEEXT) sleep$(EXEEXT) stack-fcall$(EXEEXT) \
+-	threads-execve$(EXEEXT) unix-pair-send-recv$(EXEEXT) \
++	print_maxfd$(EXEEXT) qual_inject-error-signal$(EXEEXT) \
++	qual_inject-retval$(EXEEXT) qual_inject-signal$(EXEEXT) \
++	qual_signal$(EXEEXT) quotactl-v$(EXEEXT) \
++	quotactl-xfs-v$(EXEEXT) redirect-fds$(EXEEXT) \
++	restart_syscall$(EXEEXT) scm_rights$(EXEEXT) \
++	seccomp-filter-v$(EXEEXT) seccomp-strict$(EXEEXT) \
++	set_ptracer_any$(EXEEXT) signal_receive$(EXEEXT) \
++	sleep$(EXEEXT) stack-fcall$(EXEEXT) threads-execve$(EXEEXT) \
++	unix-pair-send-recv$(EXEEXT) \
+ 	unix-pair-sendto-recvfrom$(EXEEXT) vfork-f$(EXEEXT) \
+ 	wait4-v$(EXEEXT) waitid-v$(EXEEXT)
+ TESTS = $(GEN_TESTS) $(DECODER_TESTS) $(MISC_TESTS) $(am__EXEEXT_2)
+@@ -1278,10 +1278,6 @@ pwritev_SOURCES = pwritev.c
+ pwritev_OBJECTS = pwritev-pwritev.$(OBJEXT)
+ pwritev_LDADD = $(LDADD)
+ pwritev_DEPENDENCIES = libtests.a
+-qual_fault_SOURCES = qual_fault.c
+-qual_fault_OBJECTS = qual_fault.$(OBJEXT)
+-qual_fault_LDADD = $(LDADD)
+-qual_fault_DEPENDENCIES = libtests.a
+ qual_inject_error_signal_SOURCES = qual_inject-error-signal.c
+ qual_inject_error_signal_OBJECTS = qual_inject-error-signal.$(OBJEXT)
+ qual_inject_error_signal_LDADD = $(LDADD)
+@@ -1947,16 +1943,15 @@ SOURCES = $(libtests_a_SOURCES) _newsele
+ 	prctl-tsc.c pread64-pwrite64.c preadv.c preadv-pwritev.c \
+ 	preadv2-pwritev2.c print_maxfd.c printstr.c prlimit64.c \
+ 	process_vm_readv.c process_vm_writev.c pselect6.c ptrace.c \
+-	pwritev.c qual_fault.c qual_inject-error-signal.c \
+-	qual_inject-retval.c qual_inject-signal.c qual_signal.c \
+-	quotactl.c quotactl-v.c quotactl-xfs.c quotactl-xfs-v.c \
+-	read-write.c readahead.c readdir.c readlink.c readlinkat.c \
+-	readv.c reboot.c recvfrom.c recvmmsg-timeout.c recvmsg.c \
+-	redirect-fds.c remap_file_pages.c rename.c renameat.c \
+-	renameat2.c request_key.c restart_syscall.c rmdir.c \
+-	rt_sigpending.c rt_sigprocmask.c rt_sigqueueinfo.c \
+-	rt_sigreturn.c rt_sigsuspend.c rt_sigtimedwait.c \
+-	rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
++	pwritev.c qual_inject-error-signal.c qual_inject-retval.c \
++	qual_inject-signal.c qual_signal.c quotactl.c quotactl-v.c \
++	quotactl-xfs.c quotactl-xfs-v.c read-write.c readahead.c \
++	readdir.c readlink.c readlinkat.c readv.c reboot.c recvfrom.c \
++	recvmmsg-timeout.c recvmsg.c redirect-fds.c remap_file_pages.c \
++	rename.c renameat.c renameat2.c request_key.c \
++	restart_syscall.c rmdir.c rt_sigpending.c rt_sigprocmask.c \
++	rt_sigqueueinfo.c rt_sigreturn.c rt_sigsuspend.c \
++	rt_sigtimedwait.c rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
+ 	sched_rr_get_interval.c sched_xetaffinity.c sched_xetattr.c \
+ 	sched_xetparam.c sched_xetscheduler.c sched_yield.c \
+ 	scm_rights.c seccomp-filter.c seccomp-filter-v.c \
+@@ -2034,16 +2029,15 @@ DIST_SOURCES = $(libtests_a_SOURCES) _ne
+ 	prctl-tsc.c pread64-pwrite64.c preadv.c preadv-pwritev.c \
+ 	preadv2-pwritev2.c print_maxfd.c printstr.c prlimit64.c \
+ 	process_vm_readv.c process_vm_writev.c pselect6.c ptrace.c \
+-	pwritev.c qual_fault.c qual_inject-error-signal.c \
+-	qual_inject-retval.c qual_inject-signal.c qual_signal.c \
+-	quotactl.c quotactl-v.c quotactl-xfs.c quotactl-xfs-v.c \
+-	read-write.c readahead.c readdir.c readlink.c readlinkat.c \
+-	readv.c reboot.c recvfrom.c recvmmsg-timeout.c recvmsg.c \
+-	redirect-fds.c remap_file_pages.c rename.c renameat.c \
+-	renameat2.c request_key.c restart_syscall.c rmdir.c \
+-	rt_sigpending.c rt_sigprocmask.c rt_sigqueueinfo.c \
+-	rt_sigreturn.c rt_sigsuspend.c rt_sigtimedwait.c \
+-	rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
++	pwritev.c qual_inject-error-signal.c qual_inject-retval.c \
++	qual_inject-signal.c qual_signal.c quotactl.c quotactl-v.c \
++	quotactl-xfs.c quotactl-xfs-v.c read-write.c readahead.c \
++	readdir.c readlink.c readlinkat.c readv.c reboot.c recvfrom.c \
++	recvmmsg-timeout.c recvmsg.c redirect-fds.c remap_file_pages.c \
++	rename.c renameat.c renameat2.c request_key.c \
++	restart_syscall.c rmdir.c rt_sigpending.c rt_sigprocmask.c \
++	rt_sigqueueinfo.c rt_sigreturn.c rt_sigsuspend.c \
++	rt_sigtimedwait.c rt_tgsigqueueinfo.c sched_get_priority_mxx.c \
+ 	sched_rr_get_interval.c sched_xetaffinity.c sched_xetattr.c \
+ 	sched_xetparam.c sched_xetscheduler.c sched_yield.c \
+ 	scm_rights.c seccomp-filter.c seccomp-filter-v.c \
+@@ -2845,32 +2839,31 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	access.gen.test acct.gen.test add_key.gen.test \
+ 	adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test \
+ 	btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test \
+-	chroot.gen.test clock.gen.test clock_adjtime.gen.test \
++	chroot.gen.test clock_adjtime.gen.test \
+ 	clock_nanosleep.gen.test clock_xettime.gen.test \
+ 	copy_file_range.gen.test creat.gen.test delete_module.gen.test \
+ 	dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test \
+ 	epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test \
+ 	epoll_wait.gen.test erestartsys.gen.test execveat.gen.test \
+ 	execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test \
+-	fallocate.gen.test fanotify_init.gen.test \
+-	fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test \
+-	fchmodat.gen.test fchown.gen.test fchown32.gen.test \
+-	fchownat.gen.test fcntl.gen.test fcntl64.gen.test \
+-	fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test \
+-	finit_module.gen.test flock.gen.test fork-f.gen.test \
+-	fstat.gen.test fstat64.gen.test fstatat64.gen.test \
+-	fstatfs.gen.test fstatfs64.gen.test fsync.gen.test \
+-	ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test \
+-	get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test \
+-	getdents.gen.test getdents64.gen.test getegid.gen.test \
+-	getegid32.gen.test geteuid.gen.test geteuid32.gen.test \
+-	getgid.gen.test getgid32.gen.test getgroups.gen.test \
+-	getgroups32.gen.test getpeername.gen.test getpgrp.gen.test \
+-	getpid.gen.test getppid.gen.test getrandom.gen.test \
+-	getresgid.gen.test getresgid32.gen.test getresuid.gen.test \
+-	getresuid32.gen.test getrlimit.gen.test getrusage.gen.test \
+-	getsid.gen.test getsockname.gen.test gettid.gen.test \
+-	getuid32.gen.test getxxid.gen.test inet-cmsg.gen.test \
++	fallocate.gen.test fanotify_mark.gen.test fchdir.gen.test \
++	fchmod.gen.test fchmodat.gen.test fchown.gen.test \
++	fchown32.gen.test fchownat.gen.test fcntl.gen.test \
++	fcntl64.gen.test fdatasync.gen.test file_handle.gen.test \
++	file_ioctl.gen.test finit_module.gen.test flock.gen.test \
++	fork-f.gen.test fstat.gen.test fstat64.gen.test \
++	fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test \
++	fsync.gen.test ftruncate.gen.test ftruncate64.gen.test \
++	futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test \
++	getcwd.gen.test getdents.gen.test getdents64.gen.test \
++	getegid.gen.test getegid32.gen.test geteuid.gen.test \
++	geteuid32.gen.test getgid.gen.test getgid32.gen.test \
++	getgroups.gen.test getgroups32.gen.test getpeername.gen.test \
++	getpgrp.gen.test getpid.gen.test getppid.gen.test \
++	getrandom.gen.test getresgid.gen.test getresgid32.gen.test \
++	getresuid.gen.test getresuid32.gen.test getrlimit.gen.test \
++	getrusage.gen.test getsid.gen.test getsockname.gen.test \
++	gettid.gen.test getuid32.gen.test getxxid.gen.test \
+ 	init_module.gen.test inotify.gen.test inotify_init1.gen.test \
+ 	int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test \
+ 	ioctl_evdev-v.gen.test ioctl_loop.gen.test \
+@@ -2900,24 +2893,20 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	oldlstat.gen.test oldstat.gen.test open.gen.test \
+ 	openat.gen.test osf_utimes.gen.test pause.gen.test \
+ 	perf_event_open.gen.test perf_event_open_nonverbose.gen.test \
+-	perf_event_open_unabbrev.gen.test pipe2.gen.test \
+-	pkey_alloc.gen.test pkey_free.gen.test pkey_mprotect.gen.test \
+-	ppoll.gen.test ppoll-v.gen.test pread64-pwrite64.gen.test \
+-	preadv.gen.test preadv-pwritev.gen.test \
+-	preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test \
+-	process_vm_readv.gen.test process_vm_writev.gen.test \
+-	pselect6.gen.test ptrace.gen.test pwritev.gen.test \
+-	quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test \
++	pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test \
++	pread64-pwrite64.gen.test preadv2-pwritev2.gen.test \
++	printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test \
++	process_vm_writev.gen.test ptrace.gen.test quotactl.gen.test \
++	quotactl-v.gen.test quotactl-xfs.gen.test \
+ 	quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test \
+ 	readdir.gen.test readlink.gen.test readlinkat.gen.test \
+ 	reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test \
+-	recvmsg.gen.test regex.gen.test remap_file_pages.gen.test \
+-	rename.gen.test renameat.gen.test renameat2.gen.test \
+-	request_key.gen.test rmdir.gen.test rt_sigpending.gen.test \
+-	rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test \
+-	rt_sigreturn.gen.test rt_sigsuspend.gen.test \
+-	rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test \
+-	sched.gen.test sched_get_priority_mxx.gen.test \
++	recvmsg.gen.test remap_file_pages.gen.test rename.gen.test \
++	renameat.gen.test renameat2.gen.test request_key.gen.test \
++	rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test \
++	rt_sigqueueinfo.gen.test rt_sigreturn.gen.test \
++	rt_sigsuspend.gen.test rt_sigtimedwait.gen.test \
++	rt_tgsigqueueinfo.gen.test sched_get_priority_mxx.gen.test \
+ 	sched_rr_get_interval.gen.test sched_xetaffinity.gen.test \
+ 	sched_xetattr.gen.test sched_xetparam.gen.test \
+ 	sched_xetscheduler.gen.test sched_yield.gen.test \
+@@ -2932,31 +2921,25 @@ GEN_TESTS = _newselect.gen.test accept.g
+ 	setresuid.gen.test setresuid32.gen.test setreuid.gen.test \
+ 	setreuid32.gen.test setrlimit.gen.test setuid.gen.test \
+ 	setuid32.gen.test shmxt.gen.test shutdown.gen.test \
+-	siginfo.gen.test signal_receive.gen.test signalfd4.gen.test \
+-	sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test \
+-	splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test \
++	siginfo.gen.test signal_receive.gen.test sigreturn.gen.test \
++	sigsuspend.gen.test socketcall.gen.test splice.gen.test \
++	stat.gen.test stat64.gen.test statfs.gen.test \
+ 	statfs64.gen.test statx.gen.test swap.gen.test \
+ 	sxetmask.gen.test symlink.gen.test symlinkat.gen.test \
+ 	sync.gen.test sync_file_range.gen.test \
+ 	sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test \
+ 	tee.gen.test time.gen.test timer_create.gen.test \
+ 	timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test \
+-	times-fail.gen.test trace_fstat.gen.test \
+-	trace_fstatfs.gen.test trace_lstat.gen.test \
+-	trace_question.gen.test trace_stat.gen.test \
+-	trace_stat_like.gen.test trace_statfs.gen.test \
+-	trace_statfs_like.gen.test truncate.gen.test \
+-	truncate64.gen.test ugetrlimit.gen.test umask.gen.test \
+-	umoven-illptr.gen.test umovestr-illptr.gen.test \
+-	umovestr3.gen.test unlink.gen.test unlinkat.gen.test \
+-	unshare.gen.test userfaultfd.gen.test ustat.gen.test \
+-	utime.gen.test utimensat.gen.test utimes.gen.test \
+-	vfork-f.gen.test vhangup.gen.test vmsplice.gen.test \
+-	wait4.gen.test wait4-v.gen.test waitid.gen.test \
+-	waitid-v.gen.test waitpid.gen.test xattr.gen.test \
+-	xattr-strings.gen.test xet_robust_list.gen.test \
+-	xetitimer.gen.test xetpgid.gen.test xetpriority.gen.test \
+-	xettimeofday.gen.test
++	times-fail.gen.test truncate.gen.test truncate64.gen.test \
++	ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test \
++	umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test \
++	unlinkat.gen.test unshare.gen.test userfaultfd.gen.test \
++	ustat.gen.test utime.gen.test utimensat.gen.test \
++	utimes.gen.test vfork-f.gen.test vhangup.gen.test \
++	vmsplice.gen.test wait4.gen.test wait4-v.gen.test \
++	waitid.gen.test waitid-v.gen.test waitpid.gen.test \
++	xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test \
++	xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
+ @USE_LIBUNWIND_FALSE@LIBUNWIND_TESTS = 
+ @USE_LIBUNWIND_TRUE@LIBUNWIND_TESTS = strace-k.test
+ DECODER_TESTS = \
+@@ -3034,7 +3017,6 @@ MISC_TESTS = \
+ 	options-syntax.test \
+ 	pc.test \
+ 	qual_fault-syntax.test \
+-	qual_fault.test \
+ 	qual_inject-error-signal.test \
+ 	qual_inject-retval.test \
+ 	qual_inject-signal.test \
+@@ -4156,10 +4138,6 @@ pwritev$(EXEEXT): $(pwritev_OBJECTS) $(p
+ 	@rm -f pwritev$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(pwritev_OBJECTS) $(pwritev_LDADD) $(LIBS)
+ 
+-qual_fault$(EXEEXT): $(qual_fault_OBJECTS) $(qual_fault_DEPENDENCIES) $(EXTRA_qual_fault_DEPENDENCIES) 
+-	@rm -f qual_fault$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(qual_fault_OBJECTS) $(qual_fault_LDADD) $(LIBS)
+-
+ qual_inject-error-signal$(EXEEXT): $(qual_inject_error_signal_OBJECTS) $(qual_inject_error_signal_DEPENDENCIES) $(EXTRA_qual_inject_error_signal_DEPENDENCIES) 
+ 	@rm -f qual_inject-error-signal$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(qual_inject_error_signal_OBJECTS) $(qual_inject_error_signal_LDADD) $(LIBS)
+@@ -5007,7 +4985,6 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pselect6.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptrace.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pwritev-pwritev.Po@am__quote@
+-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_fault.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-error-signal.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-retval.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qual_inject-signal.Po@am__quote@
+@@ -6078,9 +6055,6 @@ $(srcdir)/chown32.gen.test: $(abs_srcdir
+ $(srcdir)/chroot.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/clock.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/clock_adjtime.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6141,9 +6115,6 @@ $(srcdir)/fadvise64_64.gen.test: $(abs_s
+ $(srcdir)/fallocate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/fanotify_init.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/fanotify_mark.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6303,9 +6274,6 @@ $(srcdir)/getuid32.gen.test: $(abs_srcdi
+ $(srcdir)/getxxid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/inet-cmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/init_module.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6546,9 +6514,6 @@ $(srcdir)/perf_event_open.gen.test: $(ab
+ $(srcdir)/perf_event_open_nonverbose.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/perf_event_open_unabbrev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pipe2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6558,24 +6523,9 @@ $(srcdir)/pkey_alloc.gen.test: $(abs_src
+ $(srcdir)/pkey_free.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pkey_mprotect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll-v.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pread64-pwrite64.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/preadv.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/preadv-pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/preadv2-pwritev2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6591,15 +6541,9 @@ $(srcdir)/process_vm_readv.gen.test: $(a
+ $(srcdir)/process_vm_writev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pselect6.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/ptrace.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/quotactl.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6639,9 +6583,6 @@ $(srcdir)/recvmmsg-timeout.gen.test: $(a
+ $(srcdir)/recvmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/regex.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/remap_file_pages.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6681,9 +6622,6 @@ $(srcdir)/rt_sigtimedwait.gen.test: $(ab
+ $(srcdir)/rt_tgsigqueueinfo.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/sched.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sched_get_priority_mxx.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6804,9 +6742,6 @@ $(srcdir)/siginfo.gen.test: $(abs_srcdir
+ $(srcdir)/signal_receive.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/signalfd4.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sigreturn.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6882,30 +6817,6 @@ $(srcdir)/times.gen.test: $(abs_srcdir)/
+ $(srcdir)/times-fail.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/trace_fstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_fstatfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_lstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_question.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/truncate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -6984,9 +6895,6 @@ $(srcdir)/xattr-strings.gen.test: $(abs_
+ $(srcdir)/xet_robust_list.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/xetitimer.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/xetpgid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+diff -rup a/tests-mx32/gen_tests.am b/tests-mx32/gen_tests.am
+--- a/tests-mx32/gen_tests.am	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-mx32/gen_tests.am	2017-06-19 17:55:52.235721936 -0400
+@@ -1,5 +1,5 @@
+ # Generated by ./tests/gen_tests.sh from ./tests/gen_tests.in; do not edit.
+-GEN_TESTS = _newselect.gen.test accept.gen.test accept4.gen.test access.gen.test acct.gen.test add_key.gen.test adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test chroot.gen.test clock.gen.test clock_adjtime.gen.test clock_nanosleep.gen.test clock_xettime.gen.test copy_file_range.gen.test creat.gen.test delete_module.gen.test dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test epoll_wait.gen.test erestartsys.gen.test execveat.gen.test execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test fallocate.gen.test fanotify_init.gen.test fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test fchmodat.gen.test fchown.gen.test fchown32.gen.test fchownat.gen.test fcntl.gen.test fcntl64.gen.test fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test finit_module.gen.test flock.gen.test fork-f.gen.test fstat.gen.test fstat64.gen.test fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test fsync.gen.test ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test getdents.gen.test getdents64.gen.test getegid.gen.test getegid32.gen.test geteuid.gen.test geteuid32.gen.test getgid.gen.test getgid32.gen.test getgroups.gen.test getgroups32.gen.test getpeername.gen.test getpgrp.gen.test getpid.gen.test getppid.gen.test getrandom.gen.test getresgid.gen.test getresgid32.gen.test getresuid.gen.test getresuid32.gen.test getrlimit.gen.test getrusage.gen.test getsid.gen.test getsockname.gen.test gettid.gen.test getuid32.gen.test getxxid.gen.test inet-cmsg.gen.test init_module.gen.test inotify.gen.test inotify_init1.gen.test int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test ioctl_evdev-v.gen.test ioctl_loop.gen.test ioctl_loop-v.gen.test ioctl_mtd.gen.test ioctl_rtc.gen.test ioctl_rtc-v.gen.test ioctl_scsi.gen.test ioctl_sg_io_v3.gen.test ioctl_sg_io_v4.gen.test ioctl_uffdio.gen.test ioctl_v4l2.gen.test ioperm.gen.test iopl.gen.test ioprio.gen.test ip_mreq.gen.test ipc.gen.test ipc_msg.gen.test ipc_sem.gen.test ipc_shm.gen.test kcmp.gen.test kexec_file_load.gen.test kexec_load.gen.test keyctl.gen.test kill.gen.test lchown.gen.test lchown32.gen.test link.gen.test linkat.gen.test lookup_dcookie.gen.test lstat.gen.test lstat64.gen.test madvise.gen.test mbind.gen.test membarrier.gen.test memfd_create.gen.test migrate_pages.gen.test mincore.gen.test mkdir.gen.test mkdirat.gen.test mknod.gen.test mknodat.gen.test mlock.gen.test mlock2.gen.test mlockall.gen.test mmap64.gen.test mmsg.gen.test mmsg-silent.gen.test mmsg_name.gen.test mmsg_name-v.gen.test mount.gen.test move_pages.gen.test mq.gen.test mq_sendrecv.gen.test mq_sendrecv-read.gen.test mq_sendrecv-write.gen.test msg_control.gen.test msg_control-v.gen.test msg_name.gen.test munlockall.gen.test nanosleep.gen.test net-sockaddr.gen.test netlink_protocol.gen.test newfstatat.gen.test old_mmap.gen.test oldfstat.gen.test oldlstat.gen.test oldstat.gen.test open.gen.test openat.gen.test osf_utimes.gen.test pause.gen.test perf_event_open.gen.test perf_event_open_nonverbose.gen.test perf_event_open_unabbrev.gen.test pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test pkey_mprotect.gen.test ppoll.gen.test ppoll-v.gen.test pread64-pwrite64.gen.test preadv.gen.test preadv-pwritev.gen.test preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test process_vm_writev.gen.test pselect6.gen.test ptrace.gen.test pwritev.gen.test quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test readdir.gen.test readlink.gen.test readlinkat.gen.test reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test recvmsg.gen.test regex.gen.test remap_file_pages.gen.test rename.gen.test renameat.gen.test renameat2.gen.test request_key.gen.test rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test rt_sigreturn.gen.test rt_sigsuspend.gen.test rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test sched.gen.test sched_get_priority_mxx.gen.test sched_rr_get_interval.gen.test sched_xetaffinity.gen.test sched_xetattr.gen.test sched_xetparam.gen.test sched_xetscheduler.gen.test sched_yield.gen.test seccomp-filter.gen.test seccomp-filter-v.gen.test select.gen.test semop.gen.test sendfile.gen.test sendfile64.gen.test set_mempolicy.gen.test setdomainname.gen.test setfsgid.gen.test setfsgid32.gen.test setfsuid.gen.test setfsuid32.gen.test setgid.gen.test setgid32.gen.test setgroups.gen.test setgroups32.gen.test sethostname.gen.test setns.gen.test setregid.gen.test setregid32.gen.test setresgid.gen.test setresgid32.gen.test setresuid.gen.test setresuid32.gen.test setreuid.gen.test setreuid32.gen.test setrlimit.gen.test setuid.gen.test setuid32.gen.test shmxt.gen.test shutdown.gen.test siginfo.gen.test signal_receive.gen.test signalfd4.gen.test sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test statfs64.gen.test statx.gen.test swap.gen.test sxetmask.gen.test symlink.gen.test symlinkat.gen.test sync.gen.test sync_file_range.gen.test sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test tee.gen.test time.gen.test timer_create.gen.test timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test times-fail.gen.test trace_fstat.gen.test trace_fstatfs.gen.test trace_lstat.gen.test trace_question.gen.test trace_stat.gen.test trace_stat_like.gen.test trace_statfs.gen.test trace_statfs_like.gen.test truncate.gen.test truncate64.gen.test ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test unlinkat.gen.test unshare.gen.test userfaultfd.gen.test ustat.gen.test utime.gen.test utimensat.gen.test utimes.gen.test vfork-f.gen.test vhangup.gen.test vmsplice.gen.test wait4.gen.test wait4-v.gen.test waitid.gen.test waitid-v.gen.test waitpid.gen.test xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test xetitimer.gen.test xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
++GEN_TESTS = _newselect.gen.test accept.gen.test accept4.gen.test access.gen.test acct.gen.test add_key.gen.test adjtimex.gen.test aio.gen.test alarm.gen.test bpf.gen.test btrfs.gen.test chmod.gen.test chown.gen.test chown32.gen.test chroot.gen.test clock_adjtime.gen.test clock_nanosleep.gen.test clock_xettime.gen.test copy_file_range.gen.test creat.gen.test delete_module.gen.test dup.gen.test dup2.gen.test dup3.gen.test epoll_create.gen.test epoll_create1.gen.test epoll_ctl.gen.test epoll_pwait.gen.test epoll_wait.gen.test erestartsys.gen.test execveat.gen.test execveat-v.gen.test faccessat.gen.test fadvise64_64.gen.test fallocate.gen.test fanotify_mark.gen.test fchdir.gen.test fchmod.gen.test fchmodat.gen.test fchown.gen.test fchown32.gen.test fchownat.gen.test fcntl.gen.test fcntl64.gen.test fdatasync.gen.test file_handle.gen.test file_ioctl.gen.test finit_module.gen.test flock.gen.test fork-f.gen.test fstat.gen.test fstat64.gen.test fstatat64.gen.test fstatfs.gen.test fstatfs64.gen.test fsync.gen.test ftruncate.gen.test ftruncate64.gen.test futimesat.gen.test get_mempolicy.gen.test getcpu.gen.test getcwd.gen.test getdents.gen.test getdents64.gen.test getegid.gen.test getegid32.gen.test geteuid.gen.test geteuid32.gen.test getgid.gen.test getgid32.gen.test getgroups.gen.test getgroups32.gen.test getpeername.gen.test getpgrp.gen.test getpid.gen.test getppid.gen.test getrandom.gen.test getresgid.gen.test getresgid32.gen.test getresuid.gen.test getresuid32.gen.test getrlimit.gen.test getrusage.gen.test getsid.gen.test getsockname.gen.test gettid.gen.test getuid32.gen.test getxxid.gen.test init_module.gen.test inotify.gen.test inotify_init1.gen.test int_0x80.gen.test ioctl_block.gen.test ioctl_evdev.gen.test ioctl_evdev-v.gen.test ioctl_loop.gen.test ioctl_loop-v.gen.test ioctl_mtd.gen.test ioctl_rtc.gen.test ioctl_rtc-v.gen.test ioctl_scsi.gen.test ioctl_sg_io_v3.gen.test ioctl_sg_io_v4.gen.test ioctl_uffdio.gen.test ioctl_v4l2.gen.test ioperm.gen.test iopl.gen.test ioprio.gen.test ip_mreq.gen.test ipc.gen.test ipc_msg.gen.test ipc_sem.gen.test ipc_shm.gen.test kcmp.gen.test kexec_file_load.gen.test kexec_load.gen.test keyctl.gen.test kill.gen.test lchown.gen.test lchown32.gen.test link.gen.test linkat.gen.test lookup_dcookie.gen.test lstat.gen.test lstat64.gen.test madvise.gen.test mbind.gen.test membarrier.gen.test memfd_create.gen.test migrate_pages.gen.test mincore.gen.test mkdir.gen.test mkdirat.gen.test mknod.gen.test mknodat.gen.test mlock.gen.test mlock2.gen.test mlockall.gen.test mmap64.gen.test mmsg.gen.test mmsg-silent.gen.test mmsg_name.gen.test mmsg_name-v.gen.test mount.gen.test move_pages.gen.test mq.gen.test mq_sendrecv.gen.test mq_sendrecv-read.gen.test mq_sendrecv-write.gen.test msg_control.gen.test msg_control-v.gen.test msg_name.gen.test munlockall.gen.test nanosleep.gen.test net-sockaddr.gen.test netlink_protocol.gen.test newfstatat.gen.test old_mmap.gen.test oldfstat.gen.test oldlstat.gen.test oldstat.gen.test open.gen.test openat.gen.test osf_utimes.gen.test pause.gen.test perf_event_open.gen.test perf_event_open_nonverbose.gen.test pipe2.gen.test pkey_alloc.gen.test pkey_free.gen.test pread64-pwrite64.gen.test preadv2-pwritev2.gen.test printstr.gen.test prlimit64.gen.test process_vm_readv.gen.test process_vm_writev.gen.test ptrace.gen.test quotactl.gen.test quotactl-v.gen.test quotactl-xfs.gen.test quotactl-xfs-v.gen.test read-write.gen.test readahead.gen.test readdir.gen.test readlink.gen.test readlinkat.gen.test reboot.gen.test recvfrom.gen.test recvmmsg-timeout.gen.test recvmsg.gen.test remap_file_pages.gen.test rename.gen.test renameat.gen.test renameat2.gen.test request_key.gen.test rmdir.gen.test rt_sigpending.gen.test rt_sigprocmask.gen.test rt_sigqueueinfo.gen.test rt_sigreturn.gen.test rt_sigsuspend.gen.test rt_sigtimedwait.gen.test rt_tgsigqueueinfo.gen.test sched_get_priority_mxx.gen.test sched_rr_get_interval.gen.test sched_xetaffinity.gen.test sched_xetattr.gen.test sched_xetparam.gen.test sched_xetscheduler.gen.test sched_yield.gen.test seccomp-filter.gen.test seccomp-filter-v.gen.test select.gen.test semop.gen.test sendfile.gen.test sendfile64.gen.test set_mempolicy.gen.test setdomainname.gen.test setfsgid.gen.test setfsgid32.gen.test setfsuid.gen.test setfsuid32.gen.test setgid.gen.test setgid32.gen.test setgroups.gen.test setgroups32.gen.test sethostname.gen.test setns.gen.test setregid.gen.test setregid32.gen.test setresgid.gen.test setresgid32.gen.test setresuid.gen.test setresuid32.gen.test setreuid.gen.test setreuid32.gen.test setrlimit.gen.test setuid.gen.test setuid32.gen.test shmxt.gen.test shutdown.gen.test siginfo.gen.test signal_receive.gen.test sigreturn.gen.test sigsuspend.gen.test socketcall.gen.test splice.gen.test stat.gen.test stat64.gen.test statfs.gen.test statfs64.gen.test statx.gen.test swap.gen.test sxetmask.gen.test symlink.gen.test symlinkat.gen.test sync.gen.test sync_file_range.gen.test sync_file_range2.gen.test sysinfo.gen.test syslog.gen.test tee.gen.test time.gen.test timer_create.gen.test timer_xettime.gen.test timerfd_xettime.gen.test times.gen.test times-fail.gen.test truncate.gen.test truncate64.gen.test ugetrlimit.gen.test umask.gen.test umoven-illptr.gen.test umovestr-illptr.gen.test umovestr3.gen.test unlink.gen.test unlinkat.gen.test unshare.gen.test userfaultfd.gen.test ustat.gen.test utime.gen.test utimensat.gen.test utimes.gen.test vfork-f.gen.test vhangup.gen.test vmsplice.gen.test wait4.gen.test wait4-v.gen.test waitid.gen.test waitid-v.gen.test waitpid.gen.test xattr.gen.test xattr-strings.gen.test xet_robust_list.gen.test xetpgid.gen.test xetpriority.gen.test xettimeofday.gen.test
+ 
+ $(srcdir)/_newselect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+@@ -46,9 +46,6 @@ $(srcdir)/chown32.gen.test: $(abs_srcdir
+ $(srcdir)/chroot.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/clock.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/clock_adjtime.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -109,9 +106,6 @@ $(srcdir)/fadvise64_64.gen.test: $(abs_s
+ $(srcdir)/fallocate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/fanotify_init.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/fanotify_mark.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -271,9 +265,6 @@ $(srcdir)/getuid32.gen.test: $(abs_srcdi
+ $(srcdir)/getxxid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/inet-cmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/init_module.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -511,9 +502,6 @@ $(srcdir)/perf_event_open.gen.test: $(ab
+ $(srcdir)/perf_event_open_nonverbose.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/perf_event_open_unabbrev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pipe2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -523,24 +511,9 @@ $(srcdir)/pkey_alloc.gen.test: $(abs_src
+ $(srcdir)/pkey_free.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pkey_mprotect.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/ppoll-v.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/pread64-pwrite64.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/preadv.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/preadv-pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/preadv2-pwritev2.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -556,15 +529,9 @@ $(srcdir)/process_vm_readv.gen.test: $(a
+ $(srcdir)/process_vm_writev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pselect6.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/ptrace.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/pwritev.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/quotactl.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -604,9 +571,6 @@ $(srcdir)/recvmmsg-timeout.gen.test: $(a
+ $(srcdir)/recvmsg.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/regex.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/remap_file_pages.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -646,9 +610,6 @@ $(srcdir)/rt_sigtimedwait.gen.test: $(ab
+ $(srcdir)/rt_tgsigqueueinfo.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/sched.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sched_get_priority_mxx.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -769,9 +730,6 @@ $(srcdir)/siginfo.gen.test: $(abs_srcdir
+ $(srcdir)/signal_receive.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/signalfd4.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/sigreturn.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -847,30 +805,6 @@ $(srcdir)/times.gen.test: $(abs_srcdir)/
+ $(srcdir)/times-fail.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/trace_fstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_fstatfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_lstat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_question.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_stat_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+-$(srcdir)/trace_statfs_like.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/truncate.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+@@ -949,9 +883,6 @@ $(srcdir)/xattr-strings.gen.test: $(abs_
+ $(srcdir)/xet_robust_list.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+-$(srcdir)/xetitimer.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+-	$(AM_V_GEN) $^ $@
+-
+ $(srcdir)/xetpgid.gen.test: $(abs_srcdir)/gen_tests.sh $(srcdir)/gen_tests.in
+ 	$(AM_V_GEN) $^ $@
+ 
+diff -rup a/tests-mx32/gen_tests.in b/tests-mx32/gen_tests.in
+--- a/tests-mx32/gen_tests.in	2017-06-19 17:47:03.000000000 -0400
++++ b/tests-mx32/gen_tests.in	2017-06-19 17:55:52.217721919 -0400
+@@ -40,7 +40,7 @@ chmod	-a28
+ chown	-a28
+ chown32	-a31
+ chroot	-a24
+-clock	test_trace_expr 'times|fcntl.*' -e/clock
++#clock	test_trace_expr 'times|fcntl.*' -e/clock
+ clock_adjtime	-a37
+ clock_nanosleep	-e trace=clock_nanosleep,clock_gettime
+ clock_xettime	-a36 -e trace=clock_getres,clock_gettime,clock_settime
+@@ -61,7 +61,7 @@ execveat-v	-v -e trace=execveat
+ faccessat	-P $NAME.sample
+ fadvise64_64	+fadvise64.test
+ fallocate	-a18
+-fanotify_init
++#fanotify_init
+ fanotify_mark	-a32
+ fchdir	-a11
+ fchmod	-a15
+@@ -115,7 +115,7 @@ getsockname	-a27
+ gettid	-a9
+ getuid32	+getuid.test
+ getxxid	-a10 -e trace=getxpid,getxuid,getxgid
+-inet-cmsg	-e trace=recvmsg
++#inet-cmsg	-e trace=recvmsg
+ init_module	-a27
+ inotify	-a23 -e trace=inotify_add_watch,inotify_rm_watch
+ inotify_init1	-a27
+@@ -195,24 +195,24 @@ osf_utimes	-a21
+ pause	-a8 -esignal=none
+ perf_event_open	-a1
+ perf_event_open_nonverbose	-a34 -e verbose=none -e trace=perf_event_open
+-perf_event_open_unabbrev	-a1 -v -e trace=perf_event_open
++#perf_event_open_unabbrev	-a1 -v -e trace=perf_event_open
+ pipe2	-a15
+ pkey_alloc	-a17
+ pkey_free	-a13
+-pkey_mprotect	-a37
+-ppoll	-s2
+-ppoll-v	-v -s2 -e trace=ppoll
++#pkey_mprotect	-a37
++#ppoll	-s2
++#ppoll-v	-v -s2 -e trace=ppoll
+ pread64-pwrite64	-a21 -eread=0 -ewrite=1 -e trace=pread64,pwrite64 -P pread64-pwrite64-tmpfile -P /dev/zero -P /dev/null
+-preadv	-a21
+-preadv-pwritev	-a19 -eread=0 -ewrite=1 -e trace=preadv,pwritev
++#preadv	-a21
++#preadv-pwritev	-a19 -eread=0 -ewrite=1 -e trace=preadv,pwritev
+ preadv2-pwritev2	-a22 -eread=0 -ewrite=1 -e trace=preadv2,pwritev2
+ printstr	-e trace=writev
+ prlimit64
+ process_vm_readv	-s5 -a37
+ process_vm_writev	-s5 -a38
+-pselect6
++#pselect6
+ ptrace	-a23 -e signal=none
+-pwritev	-a22 -s7
++#pwritev	-a22 -s7
+ quotactl
+ quotactl-v	-v -e trace=quotactl
+ quotactl-xfs	-e trace=quotactl
+@@ -226,7 +226,7 @@ reboot
+ recvfrom	-a35
+ recvmmsg-timeout	-a25 -e trace=recvmmsg
+ recvmsg	-eread=0 -ewrite=1 -e trace=recvmsg,sendmsg
+-regex	test_trace_expr '' -etrace='/^(.*_)?statv?fs'
++#regex	test_trace_expr '' -etrace='/^(.*_)?statv?fs'
+ remap_file_pages
+ rename	-a35
+ renameat
+@@ -240,7 +240,7 @@ rt_sigreturn	-esignal='!USR1'
+ rt_sigsuspend	-a20 -esignal=none
+ rt_sigtimedwait	-a38
+ rt_tgsigqueueinfo	-esignal=none
+-sched	test_trace_expr times -e/sched
++#sched	test_trace_expr times -e/sched
+ sched_get_priority_mxx	-a33 -e trace=sched_get_priority_min,sched_get_priority_max
+ sched_rr_get_interval	-a31
+ sched_xetaffinity	-a28 -e trace=sched_getaffinity,sched_setaffinity
+@@ -281,7 +281,7 @@ shmxt	-a11 -e trace='/(osf_)?shmat,shmdt
+ shutdown	-a24
+ siginfo	-e trace=none
+ signal_receive	-a16 -e trace=kill
+-signalfd4
++#signalfd4
+ sigreturn	-esignal='!USR1'
+ sigsuspend	-a19 -esignal=none
+ socketcall	-a20
+@@ -307,14 +307,14 @@ timer_xettime	-e trace=timer_create,time
+ timerfd_xettime	-e trace=timerfd_create,timerfd_settime,timerfd_gettime
+ times	-esignal=none
+ times-fail	-a12 -e trace=times
+-trace_fstat	test_trace_expr '' -e%fstat -v -P stat.sample -P /dev/full
+-trace_fstatfs	test_trace_expr '' -e%fstatfs
+-trace_lstat	test_trace_expr '' -e%lstat -v -P stat.sample -P /dev/full
+-trace_question	test_trace_expr '' -e?osf_utimes,?/^pkey_.*
+-trace_stat	test_trace_expr '' -e%stat -v -P stat.sample -P /dev/full
+-trace_stat_like	test_trace_expr '' -e%%stat -v -P stat.sample -P /dev/full
+-trace_statfs	test_trace_expr '' -e%statfs
+-trace_statfs_like	test_trace_expr '' -e%%statfs
++#trace_fstat	test_trace_expr '' -e%fstat -v -P stat.sample -P /dev/full
++#trace_fstatfs	test_trace_expr '' -e%fstatfs
++#trace_lstat	test_trace_expr '' -e%lstat -v -P stat.sample -P /dev/full
++#trace_question	test_trace_expr '' -e?osf_utimes,?/^pkey_.*
++#trace_stat	test_trace_expr '' -e%stat -v -P stat.sample -P /dev/full
++#trace_stat_like	test_trace_expr '' -e%%stat -v -P stat.sample -P /dev/full
++#trace_statfs	test_trace_expr '' -e%statfs
++#trace_statfs_like	test_trace_expr '' -e%%statfs
+ truncate
+ truncate64
+ ugetrlimit	-a28
+@@ -341,7 +341,7 @@ waitpid	-a28
+ xattr	-a22 -e trace=getxattr,fgetxattr,lgetxattr,setxattr,fsetxattr,lsetxattr,listxattr,flistxattr,llistxattr,removexattr,fremovexattr,lremovexattr
+ xattr-strings	-a22 -s 4 -e trace=fsetxattr
+ xet_robust_list	-a24 -e trace=get_robust_list,set_robust_list
+-xetitimer	-a29 -e trace=setitimer,getitimer
++#xetitimer	-a29 -e trace=setitimer,getitimer
+ xetpgid	-a11 -e trace=getpgid,setpgid
+ xetpriority	-a29 -e trace=getpriority,setpriority
+ xettimeofday	-a20 -e trace=gettimeofday,settimeofday
