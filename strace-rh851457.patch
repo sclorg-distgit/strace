@@ -1,0 +1,259 @@
+diff -rup a/defs.h b/defs.h
+--- a/defs.h	2017-04-24 19:14:57.000000000 -0400
++++ b/defs.h	2017-06-15 14:24:50.121965636 -0400
+@@ -213,6 +213,9 @@ struct tcb {
+ 	int flags;		/* See below for TCB_ values */
+ 	int pid;		/* If 0, this tcb is free */
+ 	int qual_flg;		/* qual_flags[scno] or DEFAULT_QUAL_FLAGS + RAW */
++	int wait_status;        /* Status from last wait() */
++	struct tcb *next_need_service;
++				/* Linked list of tracees found by wait()s */
+ 	unsigned long u_error;	/* Error code */
+ 	kernel_ulong_t scno;	/* System call number */
+ 	kernel_ulong_t u_arg[MAX_ARGS];	/* System call arguments */
+@@ -413,6 +416,7 @@ extern void count_syscall(struct tcb *,
+ extern void call_summary(FILE *);
+ 
+ extern void clear_regs(void);
++extern void get_regs(pid_t pid);
+ extern int get_scno(struct tcb *);
+ extern kernel_ulong_t get_rt_sigframe_addr(struct tcb *);
+ 
+diff -rup a/strace.c b/strace.c
+--- a/strace.c	2017-05-22 13:33:51.000000000 -0400
++++ b/strace.c	2017-06-15 18:32:19.985800720 -0400
+@@ -2251,17 +2251,40 @@ print_event_exit(struct tcb *tcp)
+ 	line_ended();
+ }
+ 
++static int remembered_pid;
++static int remembered_status;
++
+ /* Returns true iff the main trace loop has to continue. */
+ static bool
+ trace(void)
+ {
+ 	int pid;
++	struct tcb *tcp;
++	struct tcb *found_tcps;
++	struct tcb **nextp;
++	struct tcb *next;
++	int wnohang = 0;
++
++	if (remembered_pid) {
++		pid = remembered_pid;
++		remembered_pid = 0;
++		if (debug_flag)
++			fprintf(stderr, " [remembered wait(%#x) = %u]\n",
++						remembered_status, pid);
++		tcp = pid2tcb(pid); /* can't be NULL */
++		tcp->wait_status = remembered_status;
++		tcp->next_need_service = NULL;
++		found_tcps = tcp;
++		goto process_saved_tcbs;
++	}
++
++	nextp = &found_tcps;
++	found_tcps = NULL;
++
++	while (1) { /* RH 851457 - collect tcbs */
+ 	int wait_errno;
+ 	int status;
+-	bool stopped;
+-	unsigned int sig;
+ 	unsigned int event;
+-	struct tcb *tcp;
+ 	struct rusage ru;
+ 
+ 	if (interrupted)
+@@ -2290,14 +2313,24 @@ trace(void)
+ 
+ 	if (interactive)
+ 		sigprocmask(SIG_SETMASK, &empty_set, NULL);
+-	pid = wait4(-1, &status, __WALL, (cflag ? &ru : NULL));
++	pid = wait4(-1, &status, __WALL | wnohang, (cflag ? &ru : NULL));
+ 	wait_errno = errno;
+ 	if (interactive)
+ 		sigprocmask(SIG_BLOCK, &blocked_set, NULL);
+ 
++	if (pid <= 0 && wnohang) {
++		/* We had at least one successful
++		 * wait() before. We waited
++		 * with WNOHANG second time.
++		 * Stop collecting more tracees,
++		 * process what we already have.
++		 */
++		break; /* out of collect tcbs */
++	}
++
+ 	if (pid < 0) {
+ 		if (wait_errno == EINTR)
+-			return true;
++			break; /* out of collect tcbs */
+ 		if (nprocs == 0 && wait_errno == ECHILD)
+ 			return false;
+ 		/*
+@@ -2311,7 +2344,7 @@ trace(void)
+ 	if (pid == popen_pid) {
+ 		if (!WIFSTOPPED(status))
+ 			popen_pid = 0;
+-		return true;
++		break; /* out of collect tcbs */
+ 	}
+ 
+ 	if (debug_flag)
+@@ -2323,7 +2356,7 @@ trace(void)
+ 	if (!tcp) {
+ 		tcp = maybe_allocate_tcb(pid, status);
+ 		if (!tcp)
+-			return true;
++			break; /* out of collect tcbs */
+ 	}
+ 
+ 	clear_regs();
+@@ -2354,29 +2387,83 @@ trace(void)
+ 				tcp->flags &= ~TCB_SKIP_DETACH_ON_FIRST_EXEC;
+ 			} else {
+ 				detach(tcp); /* do "-b execve" thingy */
+-				return true;
++				break; /* out of collect tcbs */
+ 			}
+ 		}
+ 	}
+ 
+-	/* Set current output file */
+-	current_tcp = tcp;
+-
+ 	if (cflag) {
+ 		tv_sub(&tcp->dtime, &ru.ru_stime, &tcp->stime);
+ 		tcp->stime = ru.ru_stime;
+ 	}
+ 
++	/* If we waited and got a stopped task notification,
++	 * subsequent wait may return the same pid again, for example,
++	 * with SIGKILL notification. SIGKILL kills even stopped tasks.
++	 * We must not add it to the list
++	 * (one task can't be inserted twice in the list).
++	 */
++	{
++		struct tcb *f = found_tcps;
++		while (f) {
++			if (f == tcp) {
++				remembered_pid = pid;
++				remembered_status = status;
++				goto process_saved_tcbs;
++			}
++			f = f->next_need_service;
++		}
++	}
++	/* It is important to not invert the order of tasks
++	 * to process. For one, alloc_tcb() above picks newly forked
++	 * threads in some order, processing of them and their parent
++	 * should be in the same order, otherwise bad things happen
++	 * (misinterpreted SIGSTOPs and such).
++	 */
++	tcp->wait_status = status;
++	*nextp = tcp;
++	nextp = &tcp->next_need_service;
++	*nextp = NULL;
++	wnohang = WNOHANG;
++
++	} /* RH 851457 - collect tcbs */
++
++process_saved_tcbs:
++
++	for (tcp = found_tcps;
++	     tcp;
++	     tcp = next) { /* RH 851457 - process tcbs */
++	int status;
++	bool stopped;
++	unsigned int sig;
++	unsigned int event;
++
++	/* If the child exits, the TCP will get dropped and
++	   thus we can't use it to find the next TCP needing
++	   service.  So we save the next TCP needing service
++	   and used the saved value when the loop iterates.  */
++	next = tcp->next_need_service;
++
++	status = tcp->wait_status;
++	pid = tcp->pid;
++
++	event = ((unsigned)status >> 16);
++
++	clear_regs();
++
++	/* Set current output file */
++	current_tcp = tcp;
++
+ 	if (WIFSIGNALED(status)) {
+ 		print_signalled(tcp, pid, status);
+ 		droptcb(tcp);
+-		return true;
++		continue; /* processing tcbs */
+ 	}
+ 
+ 	if (WIFEXITED(status)) {
+ 		print_exited(tcp, pid, status);
+ 		droptcb(tcp);
+-		return true;
++		continue; /* processing tcbs */
+ 	}
+ 
+ 	if (!WIFSTOPPED(status)) {
+@@ -2386,7 +2473,7 @@ trace(void)
+ 		 */
+ 		error_msg("pid %u not stopped!", pid);
+ 		droptcb(tcp);
+-		return true;
++		continue; /* processing tcbs */
+ 	}
+ 
+ 	/* Is this the very first time we see this tracee stopped? */
+@@ -2467,7 +2554,7 @@ show_stopsig:
+ 				exit_code = 1;
+ 				return false;
+ 			}
+-			return true;
++			continue; /* processing tcbs */
+ 		}
+ 		/* We don't have PTRACE_LISTEN support... */
+ 		goto restart_tracee;
+@@ -2494,7 +2581,7 @@ show_stopsig:
+ 		 * we can let this process to report its death to us
+ 		 * normally, via WIFEXITED or WIFSIGNALED wait status.
+ 		 */
+-		return true;
++		continue; /* processing tcbs */
+ 	}
+ 	goto restart_tracee;
+ 
+@@ -2508,6 +2595,8 @@ restart_tracee:
+ 		return false;
+ 	}
+ 
++	} /* RH 851457 - process tcbs */
++
+ 	return true;
+ }
+ 
+diff -rup a/syscall.c b/syscall.c
+--- a/syscall.c	2017-05-22 13:33:51.000000000 -0400
++++ b/syscall.c	2017-06-15 14:25:56.153524001 -0400
+@@ -568,7 +568,6 @@ clear_regs(void)
+ 	get_regs_error = -1;
+ }
+ 
+-static void get_regs(pid_t pid);
+ static int get_syscall_args(struct tcb *);
+ static int get_syscall_result(struct tcb *);
+ static int arch_get_scno(struct tcb *tcp);
+@@ -1163,7 +1162,7 @@ ptrace_setregs(pid_t pid)
+ 
+ #endif /* ARCH_REGS_FOR_GETREGSET || ARCH_REGS_FOR_GETREGS */
+ 
+-static void
++void
+ get_regs(pid_t pid)
+ {
+ #undef USE_GET_SYSCALL_RESULT_REGS

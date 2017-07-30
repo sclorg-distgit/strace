@@ -1,0 +1,28 @@
+diff -rup a/configure b/configure
+--- a/configure	2017-06-07 22:24:52.729127425 -0400
++++ b/configure	2017-06-07 22:24:44.687127108 -0400
+@@ -2621,6 +2621,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
+ 
+ 
+ 
++CFLAGS=`echo "" "$CFLAGS" | sed 's/ -m64 / /g'`
++CXXFLAGS=`echo "" "$CXXFLAGS" | sed 's/ -m64 / /g'`
++
++
+ ac_aux_dir=
+ for ac_dir in . "$srcdir"/.; do
+   if test -f "$ac_dir/install-sh"; then
+diff -rup a/configure.ac b/configure.ac
+--- a/configure.ac	2017-06-07 22:24:27.042126406 -0400
++++ b/configure.ac	2017-06-07 22:24:35.976126763 -0400
+@@ -38,6 +38,10 @@ AC_INIT([strace],
+ 	[https://strace.io])
+ m4_define([copyright_year], m4_esyscmd([./copyright-year-gen .year]))
+ AC_COPYRIGHT([Copyright (C) 1999-]copyright_year[ The strace developers.])
++
++CFLAGS=`echo "" "$CFLAGS" | sed 's/ -m64 / /g'`
++CXXFLAGS=`echo "" "$CXXFLAGS" | sed 's/ -m64 / /g'`
++
+ AC_CONFIG_SRCDIR([strace.c])
+ AC_CONFIG_AUX_DIR([.])
+ AC_CONFIG_HEADERS([config.h])
