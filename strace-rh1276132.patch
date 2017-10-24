@@ -1,0 +1,63 @@
+commit 1b93f4032a246e0aa43c2f424921e0aace57b994
+Author: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date:   Fri Aug 4 11:33:04 2017 +0200
+
+    Improve handling of unexpected tracees
+    
+    When receiving a ptrace stop of an unexpected child, handle it
+    in the most transparent way possible:
+    - detach it instead of PTRACE_CONT'ing;
+    - send it the signal with which it has been stopped.
+    This should hopefully help to deal with processes that have been created
+    with misused CLONE_PTRACE flag set.
+    
+    * strace.c (maybe_allocate_tcb) <WIFSTOPPED(status) && !followfork>:
+    Calculate the signal similarly to the way next_event does,
+    forward it to the unexpected tracee, and detach the tracee.
+
+commit 7a35b711df127664e7430b2644ae92c75f3d5f67
+Author: Dmitry V. Levin <ldv@altlinux.org>
+Date:   Sun Aug 6 13:27:07 2017 +0000
+
+    Fix handling of unexpected tracees when PTRACE_SEIZE is not in use
+    
+    * strace.c (maybe_allocate_tcb) <WIFSTOPPED(status) && !followfork>:
+    The expected ptrace stop signal in case of !use seize is not
+    syscall_trap_sig but SIGSTOP.  An idea of using PTRACE_GETSIGINFO to
+    distinguish signal stops that should be re-injected from other kinds
+    of stops didn't work out due to kernel implementation peculiarities
+    of initial ptrace-stop.
+
+commit 330f4633d5103938982602b6f21f761570e3482c
+Author: Dmitry V. Levin <ldv@altlinux.org>
+Date:   Sun Aug 6 15:10:56 2017 +0000
+
+    Simplify handling of unexpected tracees
+    
+    * strace.c (maybe_allocate_tcb) <WIFSTOPPED(status) && !followfork>:
+    Remove the dance around possible re-injection of WSTOPSIG(status)
+    as the only observable stop here is the initial ptrace-stop.
+
+diff -rup a/strace.c b/strace.c
+--- a/strace.c	2017-08-08 17:43:25.000000000 -0400
++++ b/strace.c	2017-08-08 17:46:27.859901126 -0400
+@@ -2076,11 +2076,15 @@ maybe_allocate_tcb(const int pid, int st
+ 			error_msg("Process %d attached", pid);
+ 		return tcp;
+ 	} else {
+-		/* This can happen if a clone call used
+-		 * CLONE_PTRACE itself.
++		/*
++		 * This can happen if a clone call misused CLONE_PTRACE itself.
++		 *
++		 * There used to be a dance around possible re-injection of
++		 * WSTOPSIG(status), but it was later removed as the only
++		 * observable stop here is the initial ptrace-stop.
+ 		 */
+-		ptrace(PTRACE_CONT, pid, NULL, 0);
+-		error_msg("Stop of unknown pid %u seen, PTRACE_CONTed it", pid);
++		ptrace(PTRACE_DETACH, pid, NULL, 0L);
++		error_msg("Detached unknown pid %d", pid);
+ 		return NULL;
+ 	}
+ }
