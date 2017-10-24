@@ -3,7 +3,7 @@
 Summary: Tracks and displays system calls associated with a running process
 Name: %{?scl_prefix}strace
 Version: 4.17
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: BSD
 Group: Development/Debuggers
 URL: http://sourceforge.net/projects/strace/
@@ -35,6 +35,7 @@ Patch2000: strace-rh921550.patch
 
 Patch3000: strace-no-rhel5-tests.patch
 Patch3001: strace-rpmbuild-m64.patch
+Patch3002: strace-rh1276132.patch
 
 # In the past we had a separate strace64 package, these days the
 # stndard 64 bit build provides that functionality.  For tracing
@@ -84,6 +85,7 @@ This package provides the `strace32' program to trace 32-bit processes on
 #%patch2002 -p1
 %patch3000 -p1
 %patch3001 -p1
+%patch3002 -p1
 
 %build
 uname -a
@@ -131,6 +133,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Fri Aug 11 2017 DJ Delorie <dj@redhat.com> - 4.17-3
+- Handle PTRACE_CONT (#1276132)
+
 * Fri Jun 23 2017 DJ Delorie <dj@redhat.com> - 4.17-2
 - update sources and .gitignore
 
