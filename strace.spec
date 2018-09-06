@@ -3,11 +3,16 @@
 Summary: Tracks and displays system calls associated with a running process
 Name: %{?scl_prefix}strace
 Version: 4.23
-Release: 3%{?dist}
+Release: 5%{?dist}
 License: BSD
 Group: Development/Debuggers
 URL: https://strace.io
 Source: https://strace.io/files/%{version}/strace-%{version}.tar.xz
+
+Patch1: strace-rhbz1609741-xlat-remove-non-Linux-flags-from-open_mode_flags.patch
+Patch2: strace-rhbz1609741-xlat-add-fallback-definitions-to-open_mode_flags.patch
+Patch3: strace-rhbz1609741-open.c-use-__O_TMPFILE.patch
+
 
 %define alternatives_cmd %{!?scl:%{_sbindir}}%{?scl:%{_root_sbindir}}/alternatives
 %define alternatives_cmdline %{alternatives_cmd}%{?scl: --altdir %{_sysconfdir}/alternatives --admindir %{_scl_root}/var/lib/alternatives}
@@ -19,21 +24,16 @@ BuildRequires: gcc
 %if 0%{?fedora} >= 18 || 0%{?centos} >= 8 || 0%{?rhel} >= 8 || 0%{?suse_version} >= 1200
 BuildRequires: pkgconfig(bluez)
 %endif
-%if 0%{?fedora} >= 20 || 0%{?centos} >= 6 || 0%{?rhel} >= 6
-%define buildrequires_stacktrace BuildRequires: elfutils-devel binutils-devel
-%endif
-%if 0%{?suse_version} >= 1100
-%define buildrequires_stacktrace BuildRequires: libdw-devel binutils-devel
-%endif
 # for -k option
-%{?buildrequires_stacktrace}
+BuildRequires: %{?scl_prefix}elfutils-devel, %{?scl_prefix}binutils-devel
 %define strace64_arches sparc64
 %{?!buildroot:BuildRoot: %_tmppath/buildroot-%name-%version-%release}
 
-# strace supports compat ABI tracing on all supported architectures now
-# (x86_64, ppc64, s390x, aarch64)
-Obsoletes: strace64
-Obsoletes: strace32
+# Not in DTS
+## strace supports compat ABI tracing on all supported architectures now
+## (x86_64, ppc64, s390x, aarch64)
+#Obsoletes: strace64
+#Obsoletes: strace32
 
 %description
 The strace program intercepts and records the system calls called and
@@ -66,6 +66,10 @@ The `strace' program in the `strace' package is for 32-bit processes.
 
 %prep
 %setup -q -n strace-%{version}
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+
 echo -n %version-%release > .tarball-version
 echo -n 2018 > .year
 echo -n 2018-06-13 > .strace.1.in.date
@@ -80,6 +84,20 @@ gcc --version |head -1
 kver="$(echo -e '#include <linux/version.h>\nLINUX_VERSION_CODE' | gcc -E -P -)"
 printf 'kernel-headers %%s.%%s.%%s\n' $(($kver/65536)) $(($kver/256%%256)) $(($kver%%256))
 echo 'END OF BUILD ENVIRONMENT INFORMATION'
+
+LDFLAGS="-L%{_libdir} -L%{_libdir}/elfutils"
+export LDLFAGS
+
+# -DHAVE_S390_COMPAT_REGS is needed due to lack of v3.10-rc1~201^2~11
+CFLAGS="$RPM_OPT_FLAGS $LDFLAGS -DHAVE_S390_COMPAT_REGS=1"
+# Removing explicit -m64 as it breaks mpers
+[ "x${CFLAGS#*-m64}" = "x${CFLAGS}" ] || CFLAGS=$(echo "$CFLAGS" | sed 's/-m64//g')
+export CFLAGS
+
+CPPFLAGS="-I%{_includedir} %{optflags}"
+# Removing explicit -m64 as it breaks mpers
+[ "x${CPPFLAGS#*-m64}" = "x${CPPFLAGS}" ] || CPPFLAGS=$(echo "$CPPFLAGS" | sed 's/-m64//g')
+export CPPFLAGS
 
 # ac_cv_member_struct_perf_event_attr_context_switch=no is due to
 # https://bugzilla.redhat.com/show_bug.cgi?id=1404539
@@ -129,6 +147,13 @@ echo 'END OF TEST SUITE INFORMATION'
 %endif
 
 %changelog
+* Mon Aug 06 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.23-5
+- Provide open mode flags fallback definitions.
+- Resolves #1609741.
+
+* Sun Aug 05 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.23-4
+- Enable stack unwinding using DTS version of libelfutils.
+
 * Wed Jul 18 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.23-3
 - Add SCL-specific modifications in order to build for DTS 8.0.
 - Resolves #1602841.
