@@ -1,0 +1,19 @@
+Some buildroots provide version of kernel-headers package that do not yet
+contains O_TMPFILE definition.  Since (looks like) there were none discrepancies
+in O_TMPFILE definition in RHEL, work that around by providing a fallback
+definition of O_TMPFILE.
+Index: strace-4.24/open.c
+===================================================================
+--- strace-4.24.orig/open.c	2018-08-09 01:27:06.000000000 +0200
++++ strace-4.24/open.c	2018-08-23 13:17:20.666260200 +0200
+@@ -48,6 +48,10 @@
+ # endif
+ #endif
+ 
++#ifndef O_TMPFILE
++# define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
++#endif
++
+ #include "xlat/open_access_modes.h"
+ #include "xlat/open_mode_flags.h"
+ 

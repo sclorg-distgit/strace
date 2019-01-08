@@ -2,17 +2,18 @@
 
 Summary: Tracks and displays system calls associated with a running process
 Name: %{?scl_prefix}strace
-Version: 4.23
-Release: 5%{?dist}
+Version: 4.24
+Release: 4.bs1%{?dist}
 License: BSD
 Group: Development/Debuggers
 URL: https://strace.io
 Source: https://strace.io/files/%{version}/strace-%{version}.tar.xz
 
-Patch1: strace-rhbz1609741-xlat-remove-non-Linux-flags-from-open_mode_flags.patch
-Patch2: strace-rhbz1609741-xlat-add-fallback-definitions-to-open_mode_flags.patch
-Patch3: strace-rhbz1609741-open.c-use-__O_TMPFILE.patch
-
+Patch0: strace-provide-O_TMPFILE-fallback-definition.patch
+Patch1: strace-rhbz1610774-0000-strace.c-introduce-struct-tcb_wait_data.patch
+Patch2: strace-rhbz1610774-0001-tests-check-tracing-of-looping-threads.patch
+Patch3: strace-rhbz1610774-0002-Add-a-generic-list-implementation.patch
+Patch4: strace-rhbz1610774-0003-Implement-queueing-of-threads-before-dispatching-the.patch
 
 %define alternatives_cmd %{!?scl:%{_sbindir}}%{?scl:%{_root_sbindir}}/alternatives
 %define alternatives_cmdline %{alternatives_cmd}%{?scl: --altdir %{_sysconfdir}/alternatives --admindir %{_scl_root}/var/lib/alternatives}
@@ -20,20 +21,19 @@ Patch3: strace-rhbz1609741-open.c-use-__O_TMPFILE.patch
 BuildRequires: libacl-devel, time
 %{?scl:Requires:%scl_runtime}
 
-BuildRequires: gcc
+BuildRequires: gcc gzip
+
+# Install Bluetooth headers for AF_BLUETOOTH sockets decoding.
 %if 0%{?fedora} >= 18 || 0%{?centos} >= 8 || 0%{?rhel} >= 8 || 0%{?suse_version} >= 1200
 BuildRequires: pkgconfig(bluez)
 %endif
-# for -k option
+
 BuildRequires: %{?scl_prefix}elfutils-devel, %{?scl_prefix}binutils-devel
-%define strace64_arches sparc64
 %{?!buildroot:BuildRoot: %_tmppath/buildroot-%name-%version-%release}
 
-# Not in DTS
-## strace supports compat ABI tracing on all supported architectures now
-## (x86_64, ppc64, s390x, aarch64)
-#Obsoletes: strace64
-#Obsoletes: strace32
+# OBS compatibility
+%{?!buildroot:BuildRoot: %_tmppath/buildroot-%name-%version-%release}
+%define maybe_use_defattr %{?suse_version:%%defattr(-,root,root)}
 
 %description
 The strace program intercepts and records the system calls called and
@@ -45,34 +45,20 @@ purposes.
 Install strace if you need a tool to track the system calls made and
 received by a process.
 
-%ifarch %{strace64_arches}
-%package -n strace64
-Summary: Tracks and displays system calls associated with a running process.
-Group: Development/Debuggers
-
-%description -n strace64
-The strace program intercepts and records the system calls called and
-received by a running process.  Strace can print a record of each
-system call, its arguments and its return value.  Strace is useful for
-diagnosing problems and debugging, as well as for instructional
-purposes.
-
-Install strace if you need a tool to track the system calls made and
-received by a process.
-
-This package provides the `strace64' program to trace 64-bit processes.
-The `strace' program in the `strace' package is for 32-bit processes.
-%endif
-
 %prep
 %setup -q -n strace-%{version}
+
+%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+
+chmod a+x tests/*.test
 
 echo -n %version-%release > .tarball-version
 echo -n 2018 > .year
-echo -n 2018-06-13 > .strace.1.in.date
+echo -n 2018-07-07 > .strace.1.in.date
 
 %build
 echo 'BEGIN OF BUILD ENVIRONMENT INFORMATION'
@@ -81,7 +67,8 @@ libc="$(ldd /bin/sh |sed -n 's|^[^/]*\(/[^ ]*/libc\.so[^ ]*\).*|\1|p' |head -1)"
 $libc |head -1
 file -L /bin/sh
 gcc --version |head -1
-kver="$(echo -e '#include <linux/version.h>\nLINUX_VERSION_CODE' | gcc -E -P -)"
+ld --version |head -1
+kver="$(printf '%%s\n%%s\n' '#include <linux/version.h>' 'LINUX_VERSION_CODE' | gcc -E -P -)"
 printf 'kernel-headers %%s.%%s.%%s\n' $(($kver/65536)) $(($kver/256%%256)) $(($kver%%256))
 echo 'END OF BUILD ENVIRONMENT INFORMATION'
 
@@ -89,7 +76,7 @@ LDFLAGS="-L%{_libdir} -L%{_libdir}/elfutils"
 export LDLFAGS
 
 # -DHAVE_S390_COMPAT_REGS is needed due to lack of v3.10-rc1~201^2~11
-CFLAGS="$RPM_OPT_FLAGS $LDFLAGS -DHAVE_S390_COMPAT_REGS=1"
+CFLAGS="$RPM_OPT_FLAGS $LDFLAGS"
 # Removing explicit -m64 as it breaks mpers
 [ "x${CFLAGS#*-m64}" = "x${CFLAGS}" ] || CFLAGS=$(echo "$CFLAGS" | sed 's/-m64//g')
 export CFLAGS
@@ -99,6 +86,7 @@ CPPFLAGS="-I%{_includedir} %{optflags}"
 [ "x${CPPFLAGS#*-m64}" = "x${CPPFLAGS}" ] || CPPFLAGS=$(echo "$CPPFLAGS" | sed 's/-m64//g')
 export CPPFLAGS
 
+CFLAGS_FOR_BUILD="$RPM_OPT_FLAGS"; export CFLAGS_FOR_BUILD
 # ac_cv_member_struct_perf_event_attr_context_switch=no is due to
 # https://bugzilla.redhat.com/show_bug.cgi?id=1404539
 %configure --enable-mpers=check ac_cv_member_struct_perf_event_attr_context_switch=no
@@ -110,22 +98,17 @@ make DESTDIR=%{buildroot} install
 # remove unpackaged files from the buildroot
 rm -f %{buildroot}%{_bindir}/strace-graph
 
-%define copy64 ln
-%if 0%{?rhel}
-%if 0%{?rhel} < 6
-%endif
-%define copy64 cp -p
-%endif
-
-%ifarch %{strace64_arches}
-%{copy64} %{buildroot}%{_bindir}/strace %{buildroot}%{_bindir}/strace64
-%endif
+# some say uncompressed changelog files are too big
+for f in ChangeLog ChangeLog-CVS; do
+	gzip -9n < "$f" > "$f".gz &
+done
+wait
 
 %check
 %{buildroot}%{_bindir}/strace -V
 # Temporary until we dig deeper into the failures
 %ifnarch s390x ppc64
-make %{?_smp_mflags} -k check VERBOSE=1 TIMEOUT_DURATION=1800
+make %{?_smp_mflags} -k check VERBOSE=1 TIMEOUT_DURATION=1800 || :
 echo 'BEGIN OF TEST SUITE INFORMATION'
 tail -n 99999 -- tests*/test-suite.log tests*/ksysent.log
 find tests* -type f -name '*.log' -print0 |
@@ -134,19 +117,27 @@ echo 'END OF TEST SUITE INFORMATION'
 %endif
 
 %files
-%{?suse_version:%defattr(-,root,root)}
-%doc CREDITS ChangeLog ChangeLog-CVS COPYING NEWS README
+%maybe_use_defattr
+%doc CREDITS ChangeLog.gz ChangeLog-CVS.gz COPYING NEWS README
 %{_bindir}/strace
 %{_bindir}/strace-log-merge
 %{_mandir}/man1/*
 
-%ifarch %{strace64_arches}
-%files -n strace64
-%{?suse_version:%defattr(-,root,root)}
-%{_bindir}/strace64
-%endif
-
 %changelog
+* Wed Sep 12 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.24-4
+- Add current version of the thread handling unfairness fix.
+- Resolves #1610774.
+
+* Thu Aug 23 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.24-3
+- Provide a fallback definition for the O_TMPFILE flag.
+- Resolves #1609741.
+
+* Tue Aug 14 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.24-2
+- Remove -DHAVE_S390_COMPAT_REGS=1 from CFLAGS.
+
+* Tue Aug 14 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.24-1
+- Rebase to v4.24.
+
 * Mon Aug 06 2018 Eugene Syromiatnikov <esyr@redhat.com> - 4.23-5
 - Provide open mode flags fallback definitions.
 - Resolves #1609741.

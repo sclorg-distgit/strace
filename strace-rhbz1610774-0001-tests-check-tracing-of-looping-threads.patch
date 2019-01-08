@@ -1,0 +1,299 @@
+From 1e497a53b82bae846618e3b9064d6c4a63024aea Mon Sep 17 00:00:00 2001
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+Date: Wed, 4 Jul 2018 02:11:27 +0000
+Subject: [PATCH 1/3] tests: check tracing of looping threads
+
+* test/many_looping_threads.c: Remove.
+* test/.gitignore: Remove many_looping_threads.
+* test/Makefile (PROGS): Likewise.
+(many_looping_threads): Remove.
+* tests/looping_threads.c: New file.
+* tests/looping_threads.test: New test.
+* tests/.gitignore: Add looping_threads.
+* tests/Makefile.am (check_PROGRAMS): Likewise.
+(looping_threads_LDADD): New variable.
+(MISC_TESTS, XFAIL_TESTS): Add looping_threads.test.
+---
+ test/.gitignore             |   1 -
+ test/Makefile               |   5 +-
+ test/many_looping_threads.c |  49 --------------------
+ tests/.gitignore            |   1 +
+ tests/Makefile.am           |   6 ++-
+ tests/looping_threads.c     | 110 ++++++++++++++++++++++++++++++++++++++++++++
+ tests/looping_threads.test  |  37 +++++++++++++++
+ 7 files changed, 154 insertions(+), 55 deletions(-)
+ delete mode 100644 test/many_looping_threads.c
+ create mode 100644 tests/looping_threads.c
+ create mode 100755 tests/looping_threads.test
+
+Index: strace-4.24/tests/Makefile.am
+===================================================================
+--- strace-4.24.orig/tests/Makefile.am	2018-09-12 23:52:54.858953939 +0200
++++ strace-4.24/tests/Makefile.am	2018-09-13 00:44:12.638097032 +0200
+@@ -127,6 +127,7 @@
+ 	ksysent \
+ 	list_sigaction_signum \
+ 	localtime \
++	looping_threads \
+ 	mmsg-silent \
+ 	mmsg_name-v \
+ 	msg_control-v \
+@@ -190,6 +191,7 @@
+ fstatat64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ ftruncate64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ localtime_LDADD = $(clock_LIBS) $(LDADD)
++looping_threads_LDADD = -lpthread $(LDADD)
+ lstat64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ mmap64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ mmap64_Xabbrev_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+@@ -321,6 +323,7 @@
+ 	interactive_block.test \
+ 	ksysent.test \
+ 	localtime.test \
++	looping_threads.test \
+ 	opipe.test \
+ 	options-syntax.test \
+ 	pc.test \
+@@ -364,7 +367,8 @@
+ XFAIL_TESTS_mx32 = $(STACKTRACE_TESTS)
+ XFAIL_TESTS_x86_64 = int_0x80.gen.test
+ XFAIL_TESTS_x32 = int_0x80.gen.test
+-XFAIL_TESTS = $(XFAIL_TESTS_$(MPERS_NAME)) $(XFAIL_TESTS_$(ARCH))
++XFAIL_TESTS = $(XFAIL_TESTS_$(MPERS_NAME)) $(XFAIL_TESTS_$(ARCH)) \
++	      looping_threads.test
+ 
+ TEST_LOG_COMPILER = env
+ AM_TEST_LOG_FLAGS = STRACE_ARCH=$(ARCH) STRACE_NATIVE_ARCH=$(NATIVE_ARCH) \
+Index: strace-4.24/tests/looping_threads.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ strace-4.24/tests/looping_threads.c	2018-09-12 23:53:31.739527473 +0200
+@@ -0,0 +1,110 @@
++/*
++ * Check tracing of looping threads.
++ *
++ * Copyright (c) 2009-2018 The strace developers.
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. The name of the author may not be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
++ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
++ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "tests.h"
++#include <assert.h>
++#include <errno.h>
++#include <pthread.h>
++#include <signal.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <sys/wait.h>
++
++static void *
++thread(void *arg)
++{
++	for (;;)
++		getuid();
++	return arg;
++}
++
++int
++main(int ac, const char *av[])
++{
++	assert(ac == 3);
++
++	int timeout = atoi(av[1]);
++	assert(timeout > 0);
++
++	int num_threads = atoi(av[2]);
++	assert(num_threads > 0);
++
++	/* Create a new process group.  */
++	if (setpgid(0, 0))
++		perror_msg_and_fail("setpgid");
++
++	/*
++	 * When the main process terminates, the process group becomes orphaned.
++	 * If any member of the orphaned process group is stopped, then
++	 * a SIGHUP signal followed by a SIGCONT signal is sent to each process
++	 * in the orphaned process group.
++	 * Create a process in a stopped state to activate this behaviour.
++	 */
++	pid_t stopped = fork();
++	if (stopped < 0)
++		perror_msg_and_fail("fork");
++	if (!stopped) {
++		raise(SIGSTOP);
++		_exit(0);
++	}
++
++	const sigset_t set = {};
++	const struct sigaction act = { .sa_handler = SIG_DFL };
++	if (sigaction(SIGALRM, &act, NULL))
++		perror_msg_and_fail("sigaction");
++	if (sigprocmask(SIG_SETMASK, &set, NULL))
++		perror_msg_and_fail("sigprocmask");
++	alarm(timeout);
++
++	/*
++	 * Create all threads in a subprocess, this guarantees that
++	 * their tracer will not be their parent.
++	 */
++	pid_t pid = fork();
++	if (pid < 0)
++		perror_msg_and_fail("fork");
++	if (!pid) {
++		for (int i = 0; i < num_threads; i++) {
++			pthread_t t;
++			if ((errno = pthread_create(&t, NULL, thread, NULL)))
++				perror_msg_and_fail("pthread_create #%d", i);
++		}
++
++		/* This terminates all threads.  */
++		_exit(0);
++	}
++
++	int s;
++	if (waitpid(pid, &s, 0) != pid)
++		perror_msg_and_fail("waitpid");
++
++	assert(WIFEXITED(s));
++	return WEXITSTATUS(s);
++}
+Index: strace-4.24/tests/looping_threads.test
+new file mode 0755
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ strace-4.24/tests/looping_threads.test	2018-09-12 23:53:31.740527461 +0200
+@@ -0,0 +1,37 @@
++#!/bin/sh
++#
++# Check tracing of looping threads.
++#
++# Copyright (c) 2009-2018 The strace developers.
++# All rights reserved.
++#
++# Redistribution and use in source and binary forms, with or without
++# modification, are permitted provided that the following conditions
++# are met:
++# 1. Redistributions of source code must retain the above copyright
++#    notice, this list of conditions and the following disclaimer.
++# 2. Redistributions in binary form must reproduce the above copyright
++#    notice, this list of conditions and the following disclaimer in the
++#    documentation and/or other materials provided with the distribution.
++# 3. The name of the author may not be used to endorse or promote products
++#    derived from this software without specific prior written permission.
++#
++# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
++# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
++# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
++# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++. "${srcdir=.}/init.sh"
++
++check_prog nproc
++timeout="$(($TIMEOUT_DURATION/10))"
++nproc="$((64+$timeout+$(nproc)))"
++
++run_prog "../$NAME" "$timeout" "$nproc"
++run_strace -f -qq -enone -esignal=none $args
+Index: strace-4.24/tests/Makefile.in
+===================================================================
+--- strace-4.24.orig/tests/Makefile.in	2018-08-14 02:44:39.000000000 +0200
++++ strace-4.24/tests/Makefile.in	2018-09-13 00:51:18.191618128 +0200
+@@ -155,7 +155,7 @@
+ 	ioctl_perf-success$(EXEEXT) ioctl_rtc-v$(EXEEXT) \
+ 	is_linux_mips_n64$(EXEEXT) ksysent$(EXEEXT) \
+ 	list_sigaction_signum$(EXEEXT) localtime$(EXEEXT) \
+-	mmsg-silent$(EXEEXT) mmsg_name-v$(EXEEXT) \
++	looping_threads$(EXEEXT) mmsg-silent$(EXEEXT) mmsg_name-v$(EXEEXT) \
+ 	msg_control-v$(EXEEXT) net-accept-connect$(EXEEXT) \
+ 	net-tpacket_stats-success$(EXEEXT) netlink_inet_diag$(EXEEXT) \
+ 	netlink_netlink_diag$(EXEEXT) netlink_unix_diag$(EXEEXT) \
+@@ -1221,6 +1221,9 @@
+ lookup_dcookie_OBJECTS = lookup_dcookie.$(OBJEXT)
+ lookup_dcookie_LDADD = $(LDADD)
+ lookup_dcookie_DEPENDENCIES = libtests.a
++looping_threads_SOURCES = looping_threads.c
++looping_threads_OBJECTS = looping_threads.$(OBJEXT)
++looping_threads_DEPENDENCIES = $(LDADD)
+ lseek_SOURCES = lseek.c
+ lseek_OBJECTS = lseek.$(OBJEXT)
+ lseek_LDADD = $(LDADD)
+@@ -2743,7 +2746,7 @@
+ 	kexec_file_load.c kexec_load.c keyctl.c keyctl-Xabbrev.c \
+ 	keyctl-Xraw.c keyctl-Xverbose.c kill.c ksysent.c lchown.c \
+ 	lchown32.c link.c linkat.c list_sigaction_signum.c llseek.c \
+-	localtime.c lookup_dcookie.c lseek.c lstat.c lstat64.c \
++	localtime.c lookup_dcookie.c looping_threads.c lseek.c lstat.c lstat64.c \
+ 	madvise.c mbind.c membarrier.c memfd_create.c migrate_pages.c \
+ 	mincore.c mkdir.c mkdirat.c mknod.c mknodat.c mlock.c mlock2.c \
+ 	mlockall.c mmap.c mmap-Xabbrev.c mmap-Xraw.c mmap-Xverbose.c \
+@@ -2888,7 +2891,7 @@
+ 	kexec_file_load.c kexec_load.c keyctl.c keyctl-Xabbrev.c \
+ 	keyctl-Xraw.c keyctl-Xverbose.c kill.c ksysent.c lchown.c \
+ 	lchown32.c link.c linkat.c list_sigaction_signum.c llseek.c \
+-	localtime.c lookup_dcookie.c lseek.c lstat.c lstat64.c \
++	localtime.c lookup_dcookie.c looping_threads.c lseek.c lstat.c lstat64.c \
+ 	madvise.c mbind.c membarrier.c memfd_create.c migrate_pages.c \
+ 	mincore.c mkdir.c mkdirat.c mknod.c mknodat.c mlock.c mlock2.c \
+ 	mlockall.c mmap.c mmap-Xabbrev.c mmap-Xraw.c mmap-Xverbose.c \
+@@ -3911,6 +3914,7 @@
+ fstatat64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ ftruncate64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ localtime_LDADD = $(clock_LIBS) $(LDADD)
++looping_threads_LDADD = -lpthread $(LDADD)
+ lstat64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ mmap64_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+ mmap64_Xabbrev_CPPFLAGS = $(AM_CPPFLAGS) -D_FILE_OFFSET_BITS=64
+@@ -4229,6 +4233,7 @@
+ 	interactive_block.test \
+ 	ksysent.test \
+ 	localtime.test \
++	looping_threads.test \
+ 	opipe.test \
+ 	options-syntax.test \
+ 	pc.test \
+@@ -5226,6 +5231,10 @@
+ 	@rm -f lookup_dcookie$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(lookup_dcookie_OBJECTS) $(lookup_dcookie_LDADD) $(LIBS)
+ 
++looping_threads$(EXEEXT): $(looping_threads_OBJECTS) $(looping_threads_DEPENDENCIES) $(EXTRA_looping_threads_DEPENDENCIES) 
++	@rm -f looping_threads$(EXEEXT)
++	$(AM_V_CCLD)$(LINK) $(looping_threads_OBJECTS) $(looping_threads_LDADD) $(LIBS)
++
+ lseek$(EXEEXT): $(lseek_OBJECTS) $(lseek_DEPENDENCIES) $(EXTRA_lseek_DEPENDENCIES) 
+ 	@rm -f lseek$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(lseek_OBJECTS) $(lseek_LDADD) $(LIBS)
+@@ -6890,6 +6899,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/llseek.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/localtime.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lookup_dcookie.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/looping_threads.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lseek.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lstat.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lstat64-lstat64.Po@am__quote@
