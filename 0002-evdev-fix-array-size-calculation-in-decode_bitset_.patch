@@ -1,0 +1,57 @@
+From 96194ed74158f0b9976fae43a910ad14eaea141e Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Fri, 12 Jul 2019 14:57:28 +0200
+Subject: [PATCH 2/3] evdev: fix array size calculation in decode_bitset_
+
+max_nr is in bits (as it is a number of flags), result is in bytes, and
+the array allocation has to be in personality words.
+
+There's still an open question, however, what to do on big-endian
+architectures when a non-divisible-by-4 value is returned.
+
+* evdev.c (decode_bitset_): Declare size_bits, initialise it and use it
+later instead of size; round up size by personality's word boundary.
+---
+ evdev.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/evdev.c b/evdev.c
+index 4b811cf8..a3d9cb55 100644
+--- a/evdev.c
++++ b/evdev.c
+@@ -151,10 +151,14 @@ decode_bitset_(struct tcb *const tcp, const kernel_ulong_t arg,
+ 	tprints(", ");
+ 
+ 	unsigned int size;
++	unsigned int size_bits;
++
+ 	if ((kernel_ulong_t) tcp->u_rval > max_nr / 8)
+-		size = max_nr;
++		size_bits = max_nr;
+ 	else
+-		size = tcp->u_rval * 8;
++		size_bits = tcp->u_rval * 8;
++
++	size = ROUNDUP(ROUNDUP_DIV(size_bits, 8), current_wordsize);
+ 
+ 	if (syserror(tcp) || !size) {
+ 		printaddr(arg);
+@@ -170,13 +174,13 @@ decode_bitset_(struct tcb *const tcp, const kernel_ulong_t arg,
+ 	tprints("[");
+ 
+ 	int bit_displayed = 0;
+-	int i = next_set_bit(decoded_arg, 0, size);
++	int i = next_set_bit(decoded_arg, 0, size_bits);
+ 	if (i < 0) {
+ 		tprints(" 0 ");
+ 	} else {
+ 		printxval_dispatch(decode_nr, decode_nr_size, i, dflt, xt);
+ 
+-		while ((i = next_set_bit(decoded_arg, i + 1, size)) > 0) {
++		while ((i = next_set_bit(decoded_arg, i + 1, size_bits)) > 0) {
+ 			if (abbrev(tcp) && bit_displayed >= 3) {
+ 				tprints(", ...");
+ 				break;
+-- 
+2.13.6
+
