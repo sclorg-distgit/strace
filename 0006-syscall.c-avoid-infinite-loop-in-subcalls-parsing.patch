@@ -1,0 +1,55 @@
+From 522ad3a0e73148dadd2480cd9cec84d9112b2e57 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Tue, 4 Sep 2018 14:48:13 +0200
+Subject: [PATCH] syscall.c: avoid infinite loop in subcalls parsing
+
+clang complains about it, so it might be a good reason to refactor it
+into something more linear.
+
+* syscall.c (syscall_entering_decode): Put syscall subcall decoding
+before ipc/socket subcall decoding, remove the loop.
+---
+ syscall.c | 19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
+
+diff --git a/syscall.c b/syscall.c
+index bae7343..a67d744 100644
+--- a/syscall.c
++++ b/syscall.c
+@@ -579,11 +579,13 @@ syscall_entering_decode(struct tcb *tcp)
+ 		return res;
+ 	}
+ 
++# ifdef SYS_syscall_subcall
++	if (tcp_sysent(tcp)->sen == SEN_syscall)
++		decode_syscall_subcall(tcp);
++# endif
+ #if defined SYS_ipc_subcall	\
+- || defined SYS_socket_subcall	\
+- || defined SYS_syscall_subcall
+-	for (;;) {
+-		switch (tcp_sysent(tcp)->sen) {
++ || defined SYS_socket_subcall
++	switch (tcp_sysent(tcp)->sen) {
+ # ifdef SYS_ipc_subcall
+ 		case SEN_ipc:
+ 			decode_ipc_subcall(tcp);
+@@ -594,15 +596,6 @@ syscall_entering_decode(struct tcb *tcp)
+ 			decode_socket_subcall(tcp);
+ 			break;
+ # endif
+-# ifdef SYS_syscall_subcall
+-		case SEN_syscall:
+-			decode_syscall_subcall(tcp);
+-			if (tcp_sysent(tcp)->sen != SEN_syscall)
+-				continue;
+-			break;
+-# endif
+-		}
+-		break;
+ 	}
+ #endif
+ 
+-- 
+2.1.4
+

@@ -1,0 +1,36 @@
+From 9446038e9face3313373ca5f7539476789fd4660 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Tue, 18 Dec 2018 05:37:30 +0100
+Subject: [PATCH] kvm: avoid bogus vcpu_info assignment in vcpu_register
+
+Also reformat code a bit to make nesting a bit clearer.
+
+Reported by Clang.
+
+* kvm.c (vcpu_register): Do not assign vcpu_alloc result to vcpu_info
+as this value is not used afterwards in the function.
+---
+ kvm.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/kvm.c b/kvm.c
+index 984a75e..8bdf1cc 100644
+--- a/kvm.c
++++ b/kvm.c
+@@ -76,10 +76,9 @@ vcpu_register(struct tcb *const tcp, int fd, int cpuid)
+ 
+ 	struct vcpu_info *vcpu_info = vcpu_find(tcp, fd);
+ 
+-	if (!vcpu_info)
+-		vcpu_info = vcpu_alloc(tcp, fd, cpuid);
+-	else if (vcpu_info->cpuid != cpuid)
+-	{
++	if (!vcpu_info) {
++		vcpu_alloc(tcp, fd, cpuid);
++	} else if (vcpu_info->cpuid != cpuid) {
+ 		vcpu_info->cpuid = cpuid;
+ 		vcpu_info->resolved = false;
+ 	}
+-- 
+2.1.4
+

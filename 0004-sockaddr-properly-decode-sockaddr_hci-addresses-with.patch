@@ -1,0 +1,225 @@
+From 5a9b0f1ef83300f853e77ada03515c8542c1cfe0 Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Thu, 29 Aug 2019 19:03:51 +0200
+Subject: [PATCH] sockaddr: properly decode sockaddr_hci addresses without
+ hci_channel
+
+Before Linux commit v2.6.38-rc1~476^2~14^2~3^2~43^2~9,
+struct sockaddr_hci did not contain hci_channel field.
+
+* configure.ac (AC_CHECK_HEADERS([bluetooth/bluetooth.h])): Add check
+for struct sockaddr_hci.hci_channel.
+* sockaddr.c (print_sockaddr_data_bt): Decode struct sockaddr_hci
+without hci_channel field.
+* tests/net-sockaddr.c (check_hci): Add check for struct sockaddr_hci
+decoding without hci_channel field; guard hci_channel with #ifdef
+HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL.
+(check_raw): Remove "len++", as 4-byte AF_BLUETOOTH socket addresses are
+interpreted as struct sockaddr_hci without hci_channel field.
+---
+ configure.ac         |  3 +++
+ sockaddr.c           | 16 +++++++++++++---
+ tests/net-sockaddr.c | 18 ++++++++++++++----
+ 3 files changed, 30 insertions(+), 7 deletions(-)
+
+Index: strace-5.1/configure.ac
+===================================================================
+--- strace-5.1.orig/configure.ac	2019-08-29 19:10:22.380362280 +0200
++++ strace-5.1/configure.ac	2019-08-29 19:11:11.240744864 +0200
+@@ -465,6 +465,9 @@
+ ])
+ 
+ AC_CHECK_HEADERS([bluetooth/bluetooth.h], [
++	AC_CHECK_MEMBERS([struct sockaddr_hci.hci_channel],,,
++			 [#include <bluetooth/bluetooth.h>
++			 #include <bluetooth/hci.h>])
+ 	AC_CHECK_MEMBERS([struct sockaddr_l2.l2_bdaddr_type],,,
+ 			 [#include <bluetooth/bluetooth.h>
+ 			 #include <bluetooth/l2cap.h>])
+Index: strace-5.1/sockaddr.c
+===================================================================
+--- strace-5.1.orig/sockaddr.c	2019-08-29 19:11:11.240744864 +0200
++++ strace-5.1/sockaddr.c	2019-08-29 19:13:01.275354429 +0200
+@@ -599,12 +599,21 @@
+ 	};
+ 
+ 	switch (addrlen) {
++	case offsetofend(struct sockaddr_hci, hci_dev):
+ 	case sizeof(struct sockaddr_hci): {
+ 		const struct sockaddr_hci *const hci = buf;
+-		tprintf("hci_dev=htobs(%hu), hci_channel=",
+-			btohs(hci->hci_dev));
+-		printxval_index(hci_channels, hci->hci_channel,
+-				"HCI_CHANNEL_???");
++		tprintf("hci_dev=htobs(%hu)", btohs(hci->hci_dev));
++
++		/*
++		 * hci_channel field has been introduced
++		 * Linux commit in v2.6.38-rc1~476^2~14^2~3^2~43^2~9.
++		 */
++		if (addrlen == sizeof(struct sockaddr_hci)) {
++			tprints(", hci_channel=");
++			printxval_index(hci_channels, hci->hci_channel,
++					"HCI_CHANNEL_???");
++		}
++
+ 		break;
+ 	}
+ 	case sizeof(struct sockaddr_sco): {
+Index: strace-5.1/tests/net-sockaddr.c
+===================================================================
+--- strace-5.1.orig/tests/net-sockaddr.c	2019-08-29 19:10:22.380362280 +0200
++++ strace-5.1/tests/net-sockaddr.c	2019-08-29 19:11:11.240744864 +0200
+@@ -543,11 +543,22 @@
+ 	TAIL_ALLOC_OBJECT_VAR_PTR(struct sockaddr_hci, hci);
+ 	hci->hci_family = AF_BLUETOOTH;
+ 	hci->hci_dev = htobs(h_port);
++# ifdef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
+ 	hci->hci_channel = HCI_CHANNEL_RAW;
++# endif
+ 	unsigned int len = sizeof(*hci);
+-	int ret = connect(-1, (void *) hci, len);
++
++	int ret = connect(-1, (void *) hci, 4);
++	printf("connect(-1, {sa_family=AF_BLUETOOTH, hci_dev=htobs(%hu)"
++	       "}, 4) = %d EBADF (%m)\n",
++	       h_port, ret);
++
++	ret = connect(-1, (void *) hci, len);
+ 	printf("connect(-1, {sa_family=AF_BLUETOOTH, hci_dev=htobs(%hu)"
+-	       ", hci_channel=HCI_CHANNEL_RAW}, %u) = %d EBADF (%m)\n",
++# ifdef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
++	       ", hci_channel=HCI_CHANNEL_RAW"
++# endif
++	       "}, %u) = %d EBADF (%m)\n",
+ 	       h_port, len, ret);
+ }
+ 
+@@ -700,9 +711,8 @@
+ 	       " = %d EBADF (%m)\n", len, ret);
+ 
+ 	u.sa->sa_family = AF_BLUETOOTH;
+-	++len;
+ 	ret = connect(-1, (void *) u.st, len);
+-	printf("connect(-1, {sa_family=AF_BLUETOOTH, sa_data=\"00\"}, %u)"
++	printf("connect(-1, {sa_family=AF_BLUETOOTH, sa_data=\"0\"}, %u)"
+ 	       " = %d EBADF (%m)\n", len, ret);
+ }
+ 
+Index: strace-5.1/tests-m32/net-sockaddr.c
+===================================================================
+--- strace-5.1.orig/tests-m32/net-sockaddr.c	2019-03-18 03:40:16.000000000 +0100
++++ strace-5.1/tests-m32/net-sockaddr.c	2019-08-29 19:16:28.327738043 +0200
+@@ -543,11 +543,22 @@
+ 	TAIL_ALLOC_OBJECT_VAR_PTR(struct sockaddr_hci, hci);
+ 	hci->hci_family = AF_BLUETOOTH;
+ 	hci->hci_dev = htobs(h_port);
++# ifdef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
+ 	hci->hci_channel = HCI_CHANNEL_RAW;
++# endif
+ 	unsigned int len = sizeof(*hci);
+-	int ret = connect(-1, (void *) hci, len);
++
++	int ret = connect(-1, (void *) hci, 4);
++	printf("connect(-1, {sa_family=AF_BLUETOOTH, hci_dev=htobs(%hu)"
++	       "}, 4) = %d EBADF (%m)\n",
++	       h_port, ret);
++
++	ret = connect(-1, (void *) hci, len);
+ 	printf("connect(-1, {sa_family=AF_BLUETOOTH, hci_dev=htobs(%hu)"
+-	       ", hci_channel=HCI_CHANNEL_RAW}, %u) = %d EBADF (%m)\n",
++# ifdef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
++	       ", hci_channel=HCI_CHANNEL_RAW"
++# endif
++	       "}, %u) = %d EBADF (%m)\n",
+ 	       h_port, len, ret);
+ }
+ 
+@@ -700,9 +711,8 @@
+ 	       " = %d EBADF (%m)\n", len, ret);
+ 
+ 	u.sa->sa_family = AF_BLUETOOTH;
+-	++len;
+ 	ret = connect(-1, (void *) u.st, len);
+-	printf("connect(-1, {sa_family=AF_BLUETOOTH, sa_data=\"00\"}, %u)"
++	printf("connect(-1, {sa_family=AF_BLUETOOTH, sa_data=\"0\"}, %u)"
+ 	       " = %d EBADF (%m)\n", len, ret);
+ }
+ 
+Index: strace-5.1/tests-mx32/net-sockaddr.c
+===================================================================
+--- strace-5.1.orig/tests-mx32/net-sockaddr.c	2019-03-18 03:40:16.000000000 +0100
++++ strace-5.1/tests-mx32/net-sockaddr.c	2019-08-29 19:16:30.805706731 +0200
+@@ -543,11 +543,22 @@
+ 	TAIL_ALLOC_OBJECT_VAR_PTR(struct sockaddr_hci, hci);
+ 	hci->hci_family = AF_BLUETOOTH;
+ 	hci->hci_dev = htobs(h_port);
++# ifdef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
+ 	hci->hci_channel = HCI_CHANNEL_RAW;
++# endif
+ 	unsigned int len = sizeof(*hci);
+-	int ret = connect(-1, (void *) hci, len);
++
++	int ret = connect(-1, (void *) hci, 4);
++	printf("connect(-1, {sa_family=AF_BLUETOOTH, hci_dev=htobs(%hu)"
++	       "}, 4) = %d EBADF (%m)\n",
++	       h_port, ret);
++
++	ret = connect(-1, (void *) hci, len);
+ 	printf("connect(-1, {sa_family=AF_BLUETOOTH, hci_dev=htobs(%hu)"
+-	       ", hci_channel=HCI_CHANNEL_RAW}, %u) = %d EBADF (%m)\n",
++# ifdef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
++	       ", hci_channel=HCI_CHANNEL_RAW"
++# endif
++	       "}, %u) = %d EBADF (%m)\n",
+ 	       h_port, len, ret);
+ }
+ 
+@@ -700,9 +711,8 @@
+ 	       " = %d EBADF (%m)\n", len, ret);
+ 
+ 	u.sa->sa_family = AF_BLUETOOTH;
+-	++len;
+ 	ret = connect(-1, (void *) u.st, len);
+-	printf("connect(-1, {sa_family=AF_BLUETOOTH, sa_data=\"00\"}, %u)"
++	printf("connect(-1, {sa_family=AF_BLUETOOTH, sa_data=\"0\"}, %u)"
+ 	       " = %d EBADF (%m)\n", len, ret);
+ }
+ 
+Index: strace-5.1/configure
+===================================================================
+--- strace-5.1.orig/configure	2019-08-30 17:41:22.748513960 +0200
++++ strace-5.1/configure	2019-08-30 17:41:43.118251704 +0200
+@@ -12037,6 +12037,18 @@
+ #define HAVE_BLUETOOTH_BLUETOOTH_H 1
+ _ACEOF
+ 
++	ac_fn_c_check_member "$LINENO" "struct sockaddr_hci" "hci_channel" "ac_cv_member_struct_sockaddr_hci_hci_channel" "#include <bluetooth/bluetooth.h>
++			 #include <bluetooth/hci.h>
++"
++if test "x$ac_cv_member_struct_sockaddr_hci_hci_channel" = xyes; then :
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL 1
++_ACEOF
++
++
++fi
++
+ 	ac_fn_c_check_member "$LINENO" "struct sockaddr_l2" "l2_bdaddr_type" "ac_cv_member_struct_sockaddr_l2_l2_bdaddr_type" "#include <bluetooth/bluetooth.h>
+ 			 #include <bluetooth/l2cap.h>
+ "
+Index: strace-5.1/config.h.in
+===================================================================
+--- strace-5.1.orig/config.h.in	2019-05-22 15:08:39.000000000 +0200
++++ strace-5.1/config.h.in	2019-08-30 18:32:25.431500194 +0200
+@@ -1391,6 +1391,9 @@
+ /* Define to 1 if the system has the type `struct sigcontext'. */
+ #undef HAVE_STRUCT_SIGCONTEXT
+ 
++/* Define to 1 if `hci_channel' is a member of `struct sockaddr_hci'. */
++#undef HAVE_STRUCT_SOCKADDR_HCI_HCI_CHANNEL
++
+ /* Define to 1 if `l2_bdaddr_type' is a member of `struct sockaddr_l2'. */
+ #undef HAVE_STRUCT_SOCKADDR_L2_L2_BDADDR_TYPE
+ 

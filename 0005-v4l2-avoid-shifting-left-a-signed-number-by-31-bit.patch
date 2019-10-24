@@ -1,0 +1,32 @@
+From 91281fec7823f1cd3df3374fbcbd14af52a3fa1b Mon Sep 17 00:00:00 2001
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Wed, 14 Aug 2019 17:15:47 +0200
+Subject: [PATCH] v4l2: avoid shifting left a signed number by 31 bit
+
+cppcheck warns about it with the following diagnostics:
+
+    error[shiftTooManyBitsSigned]: Shifting signed 32-bit value by 31 bits is
+    undefined behaviour
+
+* v4l2.c [!v4l2_fourcc_be] (v4l2_fourcc_be): Shift left 1U and not 1 in
+order to get 0x80000000.
+---
+ v4l2.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/v4l2.c b/v4l2.c
+index 5da457c..505e7b8 100644
+--- a/v4l2.c
++++ b/v4l2.c
+@@ -47,7 +47,7 @@ typedef struct v4l2_standard struct_v4l2_standard;
+ 
+ /* v4l2_fourcc_be was added by Linux commit v3.18-rc1~101^2^2~127 */
+ #ifndef v4l2_fourcc_be
+-# define v4l2_fourcc_be(a, b, c, d) (v4l2_fourcc(a, b, c, d) | (1 << 31))
++# define v4l2_fourcc_be(a, b, c, d) (v4l2_fourcc(a, b, c, d) | (1U << 31))
+ #endif
+ 
+ #define FMT_FRACT "%u/%u"
+-- 
+2.1.4
+
